@@ -1,0 +1,20 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "ventures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "featured", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "projects",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "featured", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

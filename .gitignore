@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Next.js
+/.next/
+/out/
+
+# Env files — never commit
+.env
+.env.local
+.env.*.local
+
+# Firebase service accounts — NEVER commit
+service_account.json
+*adminsdk*.json
+.firebase/
+
+# Misc
+.DS_Store
+*.pem
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
