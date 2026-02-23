@@ -253,11 +253,6 @@ export default function PortalShell({ children, title, action, unreadCount = 0 }
 
             {/* Avatar + menu */}
             <div className="relative">
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="hidden sm:inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors"
-                aria-hidden
-              />
               <AvatarMenu />
             </div>
           </div>
