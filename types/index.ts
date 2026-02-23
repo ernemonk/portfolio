@@ -62,3 +62,17 @@ export interface SiteSettings {
   };
   metrics: { label: string; value: string }[];
 }
+
+export interface Message {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createdAt: any;
+  read: boolean;
+  reply?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  repliedAt?: any;
+}
+

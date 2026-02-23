@@ -1,15 +1,25 @@
 "use client";
 import { useState } from "react";
+import { addMessage } from "@/lib/firestore/messages";
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: wire to a Firebase Function or email API (e.g. Resend)
-    console.log("Form submitted:", form); // eslint-disable-line no-console
-    setSent(true);
+    setError("");
+    setSaving(true);
+    try {
+      await addMessage(form);
+      setSent(true);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -55,11 +65,13 @@ export default function ContactPage() {
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-emerald-400/40 transition-colors resize-none"
             />
           </div>
+          {error && <p className="text-red-400 text-sm">{error}</p>}
           <button
             type="submit"
-            className="w-full py-4 bg-emerald-400 text-black font-semibold rounded-xl hover:bg-emerald-300 transition-colors"
+            disabled={saving}
+            className="w-full py-4 bg-emerald-400 text-black font-semibold rounded-xl hover:bg-emerald-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Send Message
+            {saving ? "Sending…" : "Send Message"}
           </button>
         </form>
       )}
