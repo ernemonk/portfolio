@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
@@ -68,6 +68,63 @@ interface PortalShellProps {
   title?: string;
   action?: React.ReactNode;
   unreadCount?: number;
+}
+
+function AvatarMenu() {
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (!ref.current) return;
+      if (!ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("click", onDoc);
+    return () => document.removeEventListener("click", onDoc);
+  }, []);
+
+  const doSignOut = async () => {
+    const auth = getFirebaseAuth();
+    if (auth) await signOut(auth);
+    router.replace("/portal/login");
+  };
+
+  const initials = (user?.displayName || user?.email || "User")
+    .split(" ")
+    .map((s) => s[0])
+    .slice(0, 2)
+    .join("");
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="h-9 w-9 rounded-full bg-white/5 flex items-center justify-center text-sm font-semibold text-white/90 hover:scale-105 transition-transform"
+        aria-label="Open account menu"
+      >
+        {user?.photoURL ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={user.photoURL} alt="avatar" className="h-9 w-9 rounded-full object-cover" />
+        ) : (
+          <span className="text-white/90">{initials}</span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-2 w-44 bg-[#0d0d0d] border border-white/5 rounded-lg shadow-lg py-2 z-50">
+          <div className="px-3 py-2 text-xs text-white/50">{user?.email}</div>
+          <button
+            onClick={doSignOut}
+            className="w-full text-left px-3 py-2 text-sm text-white/80 hover:bg-white/5 transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function PortalShell({ children, title, action, unreadCount = 0 }: PortalShellProps) {
@@ -191,7 +248,19 @@ export default function PortalShell({ children, title, action, unreadCount = 0 }
             </button>
             {title && <h1 className="text-white font-semibold text-lg">{title}</h1>}
           </div>
-          {action && <div>{action}</div>}
+          <div className="flex items-center gap-4">
+            {action && <div className="hidden sm:block">{action}</div>}
+
+            {/* Avatar + menu */}
+            <div className="relative">
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="hidden sm:inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+                aria-hidden
+              />
+              <AvatarMenu />
+            </div>
+          </div>
         </header>
 
         {/* Page content */}
