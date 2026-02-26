@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
+import { ensureUserDoc } from "@/lib/firestore/users";
 
 interface AuthContextType {
   user: User | null;
@@ -20,8 +21,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       return;
     }
-    const unsub = onAuthStateChanged(auth, (u) => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
+      // ensure a Firestore user doc exists for this uid (if Firestore is configured)
+      try {
+        if (u) await ensureUserDoc(u);
+      } catch (e) {
+        // Non-fatal: log and continue
+        // eslint-disable-next-line no-console
+        console.error("ensureUserDoc error:", e);
+      }
       setLoading(false);
     });
     return unsub;

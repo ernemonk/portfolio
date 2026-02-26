@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import PortalShell from "@/components/portal/PortalShell";
 import { getBio, updateBio } from "@/lib/firestore/bio";
+import { useAuth } from "@/context/AuthContext";
 import type { Bio } from "@/types";
 
 const EMPTY: Omit<Bio, "id"> = {
@@ -13,6 +14,7 @@ const EMPTY: Omit<Bio, "id"> = {
 };
 
 export default function BioPage() {
+  const { user } = useAuth();
   const [form, setForm] = useState<Omit<Bio, "id">>(EMPTY);
   const [photosInput, setPhotosInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -21,7 +23,8 @@ export default function BioPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getBio().then((bio) => {
+    if (!user) return;
+    getBio(user.uid).then((bio) => {
       if (bio) {
         const { id: _id, ...rest } = bio;
         setForm(rest);
@@ -29,7 +32,7 @@ export default function BioPage() {
       }
       setLoading(false);
     });
-  }, []);
+  }, [user]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +44,7 @@ export default function BioPage() {
         ...form,
         photos: photosInput.split("\n").map((p) => p.trim()).filter(Boolean),
       };
-      await updateBio(payload);
+      await updateBio(user!.uid, payload);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch {

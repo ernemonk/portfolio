@@ -1,28 +1,36 @@
-"use client";
-import { useEffect, useState } from "react";
+import type { Metadata } from "next";
 import Image from "next/image";
-import { getBio } from "@/lib/firestore/bio";
-import type { Bio } from "@/types";
+import { fetchOwnerBio } from "@/lib/firestore/server";
 
 const principles = [
-  { title: "Build what scales.", desc: "Systems over one-offs. Every decision compounds." },
-  { title: "Own what you create.", desc: "Equity in outputs, not just effort." },
-  { title: "Discipline over motivation.", desc: "Show up and build. Every day." },
-  { title: "Systems over hype.", desc: "Fundamentals compound while trends fade." },
+  { title: "Engineer for reliability.", desc: "Production systems have no room for shortcuts. Design for failure, test for edge cases." },
+  { title: "Integrations are the hard part.", desc: "APIs are easy. Keeping Salesforce, DocuSign, gRPC, and legacy systems in sync under load is the real work." },
+  { title: "Hardware roots, software scale.", desc: "Starting in PCB design and firmware taught me that abstractions are leaky. Knowing the substrate matters." },
+  { title: "Lead by shipping.", desc: "The best way to earn trust from a team is to write the hardest ticket yourself." },
 ];
 
-export default function AboutPage() {
-  const [bio, setBio] = useState<Bio | null>(null);
+export async function generateMetadata(): Promise<Metadata> {
+  const bio = await fetchOwnerBio();
+  const name = bio?.name ?? "Ernesto Monge";
+  const description =
+    bio?.shortIntro ??
+    "Lead Full Stack Senior Engineer with 10+ years building enterprise systems, real-time integrations, IoT, and cloud platforms.";
+  return {
+    title: `About | ${name}`,
+    description,
+    openGraph: { title: `About ${name}`, description, type: "profile" },
+    twitter: { card: "summary", title: `About ${name}`, description },
+  };
+}
 
-  useEffect(() => {
-    getBio().then(setBio).catch(console.error);
-  }, []);
+export default async function AboutPage() {
+  const bio = await fetchOwnerBio();
 
   return (
     <div className="max-w-4xl mx-auto px-6 pt-32 pb-24">
       <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">About</h1>
       <p className="text-xl text-white/50 mb-16 leading-relaxed">
-        {bio?.shortIntro ?? "Builder. Founder. Operator."}
+        {bio?.shortIntro ?? "Engineer. Integrations. IoT. Fintech."}
       </p>
 
       <div className="space-y-6 text-white/60 leading-relaxed text-lg mb-20">
@@ -31,19 +39,24 @@ export default function AboutPage() {
         ) : (
           <>
             <p>
-              I&apos;m Ernesto Martin — a hands-on builder who designs, develops, and operates
-              digital products and operational ventures. I work at the intersection of AI,
-              software, and real-world systems.
+              I&apos;m Ernesto Monge — a Lead Full Stack Senior Engineer based in San Francisco
+              with 10+ years building enterprise-grade systems across fintech, IoT, and cloud platforms.
+              I currently lead engineering at AssetMark, working on Salesforce integrations,
+              DocuSign workflows, and gRPC-based real-time data sync.
             </p>
             <p>
-              From intelligent SaaS tools to operational businesses like the Microgreens
-              Project, I build things that generate leverage and outlast trends.
-              Everything I ship is designed to run, scale, and earn.
+              My background spans the full stack and then some: React.js, Angular, Python, Node.js,
+              .NET, C++, and embedded firmware. Before software became my primary focus,
+              I was designing PCBs and writing firmware for IoT hardware — a foundation that shapes
+              how I think about systems, reliability, and performance.
             </p>
             <p>
-              I believe in ownership — of code, of companies, of outcomes. Not renting
-              access to someone else&apos;s platform. Building the platform.
+              I&apos;ve built data migration platforms at JPMorgan Chase, treasury dashboards at
+              First Republic Bank, GPS tracking infrastructure, audio fingerprinting pipelines,
+              and election monitoring tools. Every system I ship is designed to run reliably
+              under real load, with real data, at real scale.
             </p>
+            <p>B.S. Mechatronics Engineering.</p>
           </>
         )}
       </div>
@@ -53,7 +66,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-20">
           {bio.photos.map((url, i) => (
             <div key={i} className="aspect-square rounded-2xl overflow-hidden bg-white/5 relative">
-              <Image src={url} alt={`Ernesto Martin ${i + 1}`} fill className="object-cover" />
+              <Image src={url} alt={`Ernesto Monge ${i + 1}`} fill className="object-cover" />
             </div>
           ))}
         </div>

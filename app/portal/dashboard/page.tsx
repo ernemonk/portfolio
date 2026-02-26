@@ -5,6 +5,7 @@ import { getMessages } from "@/lib/firestore/messages";
 import { getVentures } from "@/lib/firestore/ventures";
 import { getProjects } from "@/lib/firestore/projects";
 import { getExperiments } from "@/lib/firestore/experiments";
+import { useAuth } from "@/context/AuthContext";
 import type { Message, Venture, Project, Experiment } from "@/types";
 import Link from "next/link";
 
@@ -39,18 +40,23 @@ function StatCard({ label, value, sub, href, color = "emerald" }: {
 }
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user) return;
     async function load() {
       try {
+        const uid = user!.uid;
         const [messages, ventures, projects, experiments] = await Promise.all([
-          getMessages(),
-          getVentures(),
-          getProjects(),
-          getExperiments(),
+          getMessages(uid),
+          getVentures(uid),
+          getProjects(uid),
+          getExperiments(uid),
         ]);
         const unread = messages.filter((m) => !m.read).length;
         setStats({
@@ -63,12 +69,14 @@ export default function DashboardPage() {
         setRecent(messages.slice(0, 5));
       } catch (err) {
         console.error("Dashboard load error:", err);
+        setError(true);
+        setErrorMessage(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, []);
+  }, [user]);
 
   const unread = stats?.unreadMessages ?? 0;
 
@@ -76,7 +84,14 @@ export default function DashboardPage() {
     <PortalShell title="Dashboard" unreadCount={unread}>
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="h-8 w-8 animate-spin border-2 border-emerald-400 border-t-transparent rounded-full" />
+          <div className="h-8 w-8 animate-spin border-2 border-sky-400 border-t-transparent rounded-full" />
+        </div>
+      ) : error || !stats ? (
+        <div className="flex flex-col items-center justify-center h-64 text-white/30 text-sm gap-2">
+          <div>Failed to load dashboard data. Check your Firebase connection.</div>
+          {errorMessage && (
+            <div className="text-xs text-white/20">{errorMessage}</div>
+          )}
         </div>
       ) : (
         <div className="space-y-8">
@@ -84,24 +99,24 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               label="Messages"
-              value={stats!.totalMessages}
+              value={stats.totalMessages}
               sub={unread > 0 ? `${unread} unread` : "All read"}
               href="/portal/messages"
-              color={unread > 0 ? "red" : "emerald"}
+              color={unread > 0 ? "red" : "sky"}
             />
             <StatCard
               label="Ventures"
-              value={stats!.totalVentures}
+              value={stats.totalVentures}
               href="/portal/ventures"
             />
             <StatCard
               label="Projects"
-              value={stats!.totalProjects}
+              value={stats.totalProjects}
               href="/portal/projects"
             />
             <StatCard
               label="Experiments"
-              value={stats!.totalExperiments}
+              value={stats.totalExperiments}
               href="/portal/experiments"
             />
           </div>

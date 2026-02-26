@@ -12,18 +12,20 @@ import {
 import { getDb } from "@/lib/firebase";
 import type { Venture } from "@/types";
 
-export async function getVentures(): Promise<Venture[]> {
+export async function getVentures(userId: string): Promise<Venture[]> {
   const db = getDb();
   if (!db) return [];
-  const snap = await getDocs(collection(db, "ventures"));
+  const q = query(collection(db, "ventures"), where("userId", "==", userId));
+  const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Venture));
 }
 
-export async function getFeaturedVentures(): Promise<Venture[]> {
+export async function getFeaturedVentures(userId: string): Promise<Venture[]> {
   const db = getDb();
   if (!db) return [];
   const q = query(
     collection(db, "ventures"),
+    where("userId", "==", userId),
     where("featured", "==", true),
     where("status", "==", "active")
   );
@@ -32,12 +34,14 @@ export async function getFeaturedVentures(): Promise<Venture[]> {
 }
 
 export async function addVenture(
-  data: Omit<Venture, "id">
+  userId: string,
+  data: Omit<Venture, "id" | "userId">
 ): Promise<string> {
   const db = getDb();
   if (!db) throw new Error("Firebase not initialized");
   const ref = await addDoc(collection(db, "ventures"), {
     ...data,
+    userId,
     createdAt: serverTimestamp(),
   });
   return ref.id;
@@ -45,7 +49,7 @@ export async function addVenture(
 
 export async function updateVenture(
   id: string,
-  data: Partial<Omit<Venture, "id">>
+  data: Partial<Omit<Venture, "id" | "userId">>
 ): Promise<void> {
   const db = getDb();
   if (!db) throw new Error("Firebase not initialized");

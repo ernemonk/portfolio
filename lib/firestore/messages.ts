@@ -8,39 +8,52 @@ import {
   onSnapshot,
   query,
   orderBy,
+  where,
   serverTimestamp,
   type Unsubscribe,
 } from "firebase/firestore";
 import { getDb } from "@/lib/firebase";
 import type { Message } from "@/types";
 
+/** Public contact form: visitor submits a message to a specific portfolio owner */
 export async function addMessage(
+  userId: string,
   data: Pick<Message, "name" | "email" | "message">
 ): Promise<void> {
   const db = getDb();
   if (!db) throw new Error("Firebase not initialized");
   await addDoc(collection(db, "messages"), {
     ...data,
+    userId,
     createdAt: serverTimestamp(),
     read: false,
     reply: "",
   });
 }
 
-export async function getMessages(): Promise<Message[]> {
+export async function getMessages(userId: string): Promise<Message[]> {
   const db = getDb();
   if (!db) return [];
-  const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+  const q = query(
+    collection(db, "messages"),
+    where("userId", "==", userId),
+    orderBy("createdAt", "desc")
+  );
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Message));
 }
 
 export function subscribeToMessages(
+  userId: string,
   cb: (messages: Message[]) => void
 ): Unsubscribe {
   const db = getDb();
   if (!db) return () => {};
-  const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+  const q = query(
+    collection(db, "messages"),
+    where("userId", "==", userId),
+    orderBy("createdAt", "desc")
+  );
   return onSnapshot(q, (snap) => {
     cb(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Message)));
   });

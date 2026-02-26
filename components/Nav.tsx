@@ -5,8 +5,8 @@ import { useState } from "react";
 const links = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
-  { href: "/ventures", label: "Ventures" },
   { href: "/projects", label: "Projects" },
+  { href: "/experiments", label: "Lab" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -16,7 +16,7 @@ export default function Nav() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/10">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link href="/" className="text-white font-bold text-lg tracking-tight">
-          EM<span className="text-emerald-400">.</span>
+          EM<span className="text-sky-400">.</span>
         </Link>
         <div className="hidden md:flex items-center gap-8">
           {links.map((l) => (

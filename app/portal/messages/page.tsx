@@ -7,6 +7,7 @@ import {
   saveReply,
   deleteMessage,
 } from "@/lib/firestore/messages";
+import { useAuth } from "@/context/AuthContext";
 import type { Message } from "@/types";
 
 function formatDate(msg: Message) {
@@ -15,6 +16,7 @@ function formatDate(msg: Message) {
 }
 
 export default function MessagesPage() {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [selected, setSelected] = useState<Message | null>(null);
   const [reply, setReply] = useState("");
@@ -24,12 +26,13 @@ export default function MessagesPage() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    const unsub = subscribeToMessages((msgs) => {
+    if (!user) return;
+    const unsub = subscribeToMessages(user.uid, (msgs) => {
       setMessages(msgs);
       setUnreadCount(msgs.filter((m) => !m.read).length);
     });
     return unsub;
-  }, []);
+  }, [user]);
 
   const handleSelect = async (msg: Message) => {
     setSelected(msg);

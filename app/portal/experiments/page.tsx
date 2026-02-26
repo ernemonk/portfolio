@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import PortalShell from "@/components/portal/PortalShell";
 import {
   getExperiments,
@@ -7,6 +7,7 @@ import {
   updateExperiment,
   deleteExperiment,
 } from "@/lib/firestore/experiments";
+import { useAuth } from "@/context/AuthContext";
 import type { Experiment } from "@/types";
 
 const EMPTY: Omit<Experiment, "id"> = {
@@ -25,6 +26,7 @@ const STATUS_COLORS: Record<Experiment["status"], string> = {
 };
 
 export default function ExperimentsPage() {
+  const { user } = useAuth();
   const [experiments, setExperiments] = useState<Experiment[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -33,16 +35,17 @@ export default function ExperimentsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const load = async () => {
+  const load = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     try {
-      setExperiments(await getExperiments());
+      setExperiments(await getExperiments(user.uid));
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   const openAdd = () => {
     setEditing(null);
@@ -67,7 +70,7 @@ export default function ExperimentsPage() {
       if (editing) {
         await updateExperiment(editing.id, form);
       } else {
-        await addExperiment(form);
+        await addExperiment(user!.uid, form);
       }
       setShowForm(false);
       await load();

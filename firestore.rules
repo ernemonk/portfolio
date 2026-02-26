@@ -1,34 +1,77 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // All portfolio collections: public read, authenticated write
-    match /bio/{doc} {
-      allow read: if true;
-      allow write: if request.auth != null;
+
+    // Helper: request is from the owner of this resource
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
     }
-    match /ventures/{doc} {
-      allow read: if true;
-      allow write: if request.auth != null;
+
+    // Users: each user owns their own profile doc
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
     }
-    match /projects/{doc} {
-      allow read: if true;
-      allow write: if request.auth != null;
+
+    // Bio: stored per-user at bio/{userId}
+    match /bio/{userId} {
+      allow read: if true;               // public — visitors can read any user's bio
+      allow write: if isOwner(userId);
     }
-    match /experiments/{doc} {
+
+    // Ventures: public read, owner-only write
+    match /ventures/{docId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null
+                             && resource.data.userId == request.auth.uid;
     }
-    match /media/{doc} {
+
+    // Projects: public read, owner-only write
+    match /projects/{docId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null
+                             && resource.data.userId == request.auth.uid;
     }
-    match /gallery/{doc} {
+
+    // Experiments: public read, owner-only write
+    match /experiments/{docId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null
+                             && resource.data.userId == request.auth.uid;
     }
-    match /settings/{doc} {
+
+    // Messages: anyone can create (contact form), only the recipient (userId) can read/manage
+    match /messages/{docId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null
+                                   && resource.data.userId == request.auth.uid;
+    }
+
+    // Settings: per-user doc at settings/{userId}
+    match /settings/{userId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isOwner(userId);
+    }
+
+    // Media / gallery: public read, owner write
+    match /media/{docId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null
+                             && resource.data.userId == request.auth.uid;
+    }
+    match /gallery/{docId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null
+                             && resource.data.userId == request.auth.uid;
     }
   }
 }

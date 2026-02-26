@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import PortalShell from "@/components/portal/PortalShell";
 import {
   getProjects,
@@ -7,6 +7,7 @@ import {
   updateProject,
   deleteProject,
 } from "@/lib/firestore/projects";
+import { useAuth } from "@/context/AuthContext";
 import type { Project } from "@/types";
 
 const EMPTY: Omit<Project, "id"> = {
@@ -22,6 +23,7 @@ const EMPTY: Omit<Project, "id"> = {
 };
 
 export default function ProjectsPage() {
+  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -31,16 +33,17 @@ export default function ProjectsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const load = async () => {
+  const load = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     try {
-      setProjects(await getProjects());
+      setProjects(await getProjects(user.uid));
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   const openAdd = () => {
     setEditing(null);
@@ -68,7 +71,7 @@ export default function ProjectsPage() {
       if (editing) {
         await updateProject(editing.id, payload);
       } else {
-        await addProject(payload);
+        await addProject(user!.uid, payload);
       }
       setShowForm(false);
       await load();

@@ -1,5 +1,6 @@
 export interface Bio {
   id?: string;
+  userId?: string;
   name: string;
   headline: string;
   shortIntro: string;
@@ -9,6 +10,7 @@ export interface Bio {
 
 export interface Venture {
   id: string;
+  userId?: string;
   name: string;
   logoURL: string;
   website: string;
@@ -22,6 +24,7 @@ export interface Venture {
 
 export interface Project {
   id: string;
+  userId?: string;
   title: string;
   summary: string;
   problem: string;
@@ -35,6 +38,7 @@ export interface Project {
 
 export interface Experiment {
   id: string;
+  userId?: string;
   title: string;
   type: string;
   status: "building" | "scaling" | "research" | "archived";

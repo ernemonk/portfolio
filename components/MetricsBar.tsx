@@ -1,8 +1,8 @@
 const metrics = [
-  { label: "Owned Ventures", value: "6+" },
-  { label: "Projects Built", value: "10+" },
-  { label: "Systems in Production", value: "Active" },
-  { label: "Years Building", value: "5+" },
+  { label: "Years Experience", value: "10+" },
+  { label: "Enterprise Clients", value: "7+" },
+  { label: "Tech Stack", value: "Full" },
+  { label: "Currently", value: "AssetMark" },
 ];
 
 export default function MetricsBar() {

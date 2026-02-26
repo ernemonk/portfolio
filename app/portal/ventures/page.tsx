@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import PortalShell from "@/components/portal/PortalShell";
 import {
   getVentures,
@@ -7,6 +7,7 @@ import {
   updateVenture,
   deleteVenture,
 } from "@/lib/firestore/ventures";
+import { useAuth } from "@/context/AuthContext";
 import type { Venture } from "@/types";
 
 const EMPTY: Omit<Venture, "id"> = {
@@ -22,6 +23,7 @@ const EMPTY: Omit<Venture, "id"> = {
 };
 
 export default function VenturesPage() {
+  const { user } = useAuth();
   const [ventures, setVentures] = useState<Venture[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -31,16 +33,17 @@ export default function VenturesPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const load = async () => {
+  const load = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     try {
-      setVentures(await getVentures());
+      setVentures(await getVentures(user.uid));
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   const openAdd = () => {
     setEditing(null);
@@ -68,7 +71,7 @@ export default function VenturesPage() {
       if (editing) {
         await updateVenture(editing.id, payload);
       } else {
-        await addVenture(payload);
+        await addVenture(user!.uid, payload);
       }
       setShowForm(false);
       await load();
