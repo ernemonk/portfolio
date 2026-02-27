@@ -20,7 +20,7 @@ service cloud.firestore {
 
     // Ventures: public read, owner-only write
     match /ventures/{docId} {
-      allow read: if true;
+      allow read, list: if true;  // list is needed for queries with where()
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid;
       allow update, delete: if request.auth != null
@@ -29,7 +29,7 @@ service cloud.firestore {
 
     // Projects: public read, owner-only write
     match /projects/{docId} {
-      allow read: if true;
+      allow read, list: if true;  // list is needed for queries with where()
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid;
       allow update, delete: if request.auth != null
@@ -38,7 +38,7 @@ service cloud.firestore {
 
     // Experiments: public read, owner-only write
     match /experiments/{docId} {
-      allow read: if true;
+      allow read, list: if true;  // list is needed for queries with where()
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid;
       allow update, delete: if request.auth != null

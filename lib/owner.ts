@@ -6,7 +6,7 @@
  * in .env.local — otherwise the hardcoded default is used.
  */
 export const OWNER_UID: string =
-  process.env.NEXT_PUBLIC_OWNER_UID ?? "1lUDhgCStvPddp1hcriXDGR6Ds43";
+  process.env.NEXT_PUBLIC_OWNER_UID ?? "naYXUw6EACQMwPTsJZSscTL1NDx1";
 
 /** Convenience function kept for backwards-compat with existing callers. */
 export function getOwnerUid(): string {

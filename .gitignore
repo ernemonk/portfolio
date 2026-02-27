@@ -1,3 +1,24 @@
+# Local ignores
+service_account.json
+# keep node modules out
+node_modules/
+
+# Next build outputs
+/.next/
+/out/
+
+# Env files
+.env
+.env.local
+
+# Firebase
+.firebase/
+
+# macOS
+.DS_Store
+
+# logs
+npm-debug.log*
 # Dependencies
 node_modules/
 

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Ernesto Monge Consulting",
+    "website": "https://ernestomonge.com",
+    "description": "Fractional CTO and engineering consulting for startups and enterprises — full-stack architecture, integrations, and technical strategy.",
+    "logo": "",
+    "role": "Founder",
+    "category": "Consulting",
+    "owned": true,
+    "status": "active",
+    "tags": "Consulting,Fractional CTO,Engineering",
+    "featured": true
+  }
+]

@@ -1,0 +1,52 @@
+[
+  {
+    "title": "Portfolio Site",
+    "link": "https://ernestomonge.com",
+    "summary": "Personal portfolio and admin portal built with Next.js 14, Firebase, and Tailwind CSS.",
+    "problem": "Needed a fast, SEO-friendly portfolio that could be managed from a private admin portal without a CMS.",
+    "solution": "Static-exported Next.js app with Firebase Auth, Firestore, and a portal-protected admin UI.",
+    "tech": "Next.js,React,TypeScript,Firebase,Tailwind CSS",
+    "metrics": "",
+    "featured": true
+  },
+  {
+    "title": "GPS Tracking Infrastructure",
+    "link": "",
+    "summary": "Real-time GPS tracking platform for fleet management built on Node.js, gRPC, and cloud infrastructure.",
+    "problem": "Existing fleet tracking solutions lacked real-time accuracy and couldn't scale to thousands of simultaneous vehicles.",
+    "solution": "Built a custom gRPC-based backend with real-time position streaming, map rendering, and alerting pipelines.",
+    "tech": "Node.js,gRPC,PostgreSQL,Redis,Google Maps",
+    "metrics": "10k+ active devices",
+    "featured": true
+  },
+  {
+    "title": "Audio Fingerprinting Pipeline",
+    "link": "",
+    "summary": "Automated audio fingerprinting and content recognition pipeline for media rights detection.",
+    "problem": "Manual audio content matching was too slow and error-prone at scale for a media company.",
+    "solution": "Built a pipeline using audio fingerprinting algorithms, FFT processing, and distributed job queues.",
+    "tech": "Python,FFmpeg,Redis,PostgreSQL,AWS",
+    "metrics": "",
+    "featured": false
+  },
+  {
+    "title": "Treasury Dashboard — First Republic Bank",
+    "link": "",
+    "summary": "Internal treasury and cash management dashboard with real-time data sync and reporting.",
+    "problem": "Treasury teams relied on manual spreadsheets and disconnected tools for cash position tracking.",
+    "solution": "Built a React/Node.js dashboard with live data feeds, automated reconciliation, and drill-down reporting.",
+    "tech": "React,Node.js,.NET,SQL Server",
+    "metrics": "",
+    "featured": false
+  },
+  {
+    "title": "Data Migration Platform — JPMorgan Chase",
+    "link": "",
+    "summary": "Enterprise data migration framework for moving legacy financial data into modern cloud systems.",
+    "problem": "Legacy system migrations at scale involved complex transformations, compliance requirements, and zero-downtime constraints.",
+    "solution": "Designed and built a configurable migration engine with validation pipelines, audit trails, and rollback support.",
+    "tech": "Java,.NET,SQL Server,Azure",
+    "metrics": "100M+ records migrated",
+    "featured": false
+  }
+]

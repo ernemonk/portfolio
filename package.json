@@ -4,13 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "add:venture": "node ./scripts/add-item.js venture",
+    "add:project": "node ./scripts/add-item.js project",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "firebase": "^10.12.2",
+    "firebase-admin": "^13.7.0",
     "next": "^14.2.20",
+    "prompts": "^2.4.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
