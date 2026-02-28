@@ -1,91 +1,53 @@
 import type { Metadata } from "next";
 import Hero from "@/components/Hero";
+import CapabilityBlocks from "@/components/CapabilityBlocks";
+import SelectedWork from "@/components/SelectedWork";
 import MetricsBar from "@/components/MetricsBar";
-import VentureCard from "@/components/VentureCard";
-import ProjectCard from "@/components/ProjectCard";
+import CurrentFocus from "@/components/CurrentFocus";
 import {
-  fetchOwnerVentures,
-  fetchOwnerProjects,
-  fetchOwnerExperiments,
+  fetchHeroSection,
+  fetchCapabilities,
+  fetchWorkItems,
+  fetchSiteMetrics,
+  fetchCurrentFocus,
 } from "@/lib/firestore/server";
 
 export const metadata: Metadata = {
-  title: "Ernesto Monge — Lead Full Stack Senior Engineer",
+  title: "Ernesto Monge — Senior Engineer · Founder · Consultant",
   description:
-    "10+ years building enterprise systems, real-time integrations, IoT platforms, and cloud-native applications at scale. Based in San Francisco.",
+    "Engineering scalable systems. Building real products. 10+ years across enterprise platforms, real-time integrations, and cloud-native applications.",
   openGraph: {
-    title: "Ernesto Monge — Lead Full Stack Senior Engineer",
+    title: "Ernesto Monge — Senior Engineer · Founder · Consultant",
     description:
-      "10+ years building enterprise systems, real-time integrations, IoT platforms, and cloud-native applications at scale.",
+      "Engineering scalable systems. Building real products. 10+ years across enterprise platforms, real-time integrations, and cloud-native applications.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ernesto Monge — Lead Full Stack Senior Engineer",
-    description: "10+ years building enterprise systems at scale. Based in San Francisco.",
+    title: "Ernesto Monge — Senior Engineer · Founder · Consultant",
+    description:
+      "Engineering scalable systems. Building real products.",
   },
 };
 
 export default async function HomePage() {
-  const [ventures, projects, experiments] = await Promise.all([
-    fetchOwnerVentures(),
-    fetchOwnerProjects(),
-    fetchOwnerExperiments(),
+  const [hero, capabilities, workItems, metrics, focus] = await Promise.all([
+    fetchHeroSection(),
+    fetchCapabilities(),
+    fetchWorkItems(),
+    fetchSiteMetrics(),
+    fetchCurrentFocus(),
   ]);
 
-  const featuredVentures = ventures.filter((v) => v.featured && v.status === "active");
-  const featuredProjects = projects.filter((p) => p.featured);
+  const featured = (workItems ?? []).filter((w) => w.featured);
 
   return (
     <>
-      <Hero />
-      <MetricsBar />
-
-      {featuredVentures.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 py-24">
-          <div className="flex items-center justify-between mb-12">
-            <h2 className="text-3xl font-bold text-white">Featured Ventures</h2>
-            <a href="/ventures" className="text-sm text-sky-400 hover:text-sky-300 transition-colors">
-              View all →
-            </a>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredVentures.slice(0, 3).map((v) => <VentureCard key={v.id} venture={v} />)}
-          </div>
-        </section>
-      )}
-
-      {featuredProjects.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 py-24 border-t border-white/10">
-          <div className="flex items-center justify-between mb-12">
-            <h2 className="text-3xl font-bold text-white">Projects</h2>
-            <a href="/projects" className="text-sm text-sky-400 hover:text-sky-300 transition-colors">
-              View all →
-            </a>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProjects.slice(0, 3).map((p) => <ProjectCard key={p.id} project={p} />)}
-          </div>
-        </section>
-      )}
-
-      {experiments.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 py-24 border-t border-white/10">
-          <h2 className="text-3xl font-bold text-white mb-12">Currently in the Lab</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {experiments.slice(0, 4).map((e) => (
-              <div key={e.id} className="p-6 border border-white/10 rounded-2xl hover:border-white/30 transition-all">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
-                  <span className="text-xs text-sky-400 font-mono uppercase tracking-wider">{e.status}</span>
-                </div>
-                <h3 className="text-white font-semibold mb-2">{e.title}</h3>
-                <p className="text-sm text-white/40">{e.summary}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      <Hero data={hero} />
+      <CapabilityBlocks data={capabilities} />
+      <SelectedWork items={featured} />
+      <MetricsBar metrics={metrics ?? []} />
+      <CurrentFocus data={focus} />
     </>
   );
 }

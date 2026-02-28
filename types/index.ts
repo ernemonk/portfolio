@@ -8,6 +8,48 @@ export interface Bio {
   photos: string[];
 }
 
+/* ─── Unified Work Item ─── */
+
+export type WorkItemType =
+  | "venture"
+  | "project"
+  | "experiment"
+  | "client";
+
+export type WorkItemStatus =
+  | "active"
+  | "in-development"
+  | "completed"
+  | "archived"
+  | "building"
+  | "scaling"
+  | "research"
+  | "exited";
+
+export interface WorkItem {
+  id: string;
+  userId?: string;
+  name: string;
+  description: string;
+  type: WorkItemType;
+  category: string;
+  tags: string[];
+  status: WorkItemStatus;
+  owned: boolean;
+  role: string;
+  website: string;
+  logoURL: string;
+  techStack: string[];
+  metrics: string;
+  images: string[];
+  featured: boolean;
+  order: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createdAt?: any;
+}
+
+/* ─── Legacy types (kept for backwards compat during migration) ─── */
+
 export interface Venture {
   id: string;
   userId?: string;
@@ -80,3 +122,35 @@ export interface Message {
   repliedAt?: any;
 }
 
+/* ─── Homepage Structural Types ─── */
+
+export interface SiteMetric {
+  id: string;
+  label: string;
+  value: string;
+  order: number;
+}
+
+export interface HeroSection {
+  name: string;
+  tagline: string;
+  subtext: string;
+  cta1Label: string;
+  cta1Href: string;
+  cta2Label: string;
+  cta2Href: string;
+}
+
+export interface CapabilityBlock {
+  title: string;
+  description: string;
+}
+
+export interface CapabilitiesSection {
+  blocks: CapabilityBlock[];
+}
+
+export interface CurrentFocusSection {
+  title: string;
+  items: string[];
+}

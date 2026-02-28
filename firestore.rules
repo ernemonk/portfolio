@@ -14,38 +14,45 @@ service cloud.firestore {
 
     // Bio: stored per-user at bio/{userId}
     match /bio/{userId} {
-      allow read: if true;               // public — visitors can read any user's bio
+      allow read: if true;
       allow write: if isOwner(userId);
     }
 
-    // Ventures: public read, owner-only write
+    // ─── Unified Work Items ───
+    match /workItems/{docId} {
+      allow read, list: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null
+                             && resource.data.userId == request.auth.uid;
+    }
+
+    // ─── Legacy collections (kept for backwards compat) ───
     match /ventures/{docId} {
-      allow read, list: if true;  // list is needed for queries with where()
+      allow read, list: if true;
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid;
       allow update, delete: if request.auth != null
                              && resource.data.userId == request.auth.uid;
     }
 
-    // Projects: public read, owner-only write
     match /projects/{docId} {
-      allow read, list: if true;  // list is needed for queries with where()
+      allow read, list: if true;
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid;
       allow update, delete: if request.auth != null
                              && resource.data.userId == request.auth.uid;
     }
 
-    // Experiments: public read, owner-only write
     match /experiments/{docId} {
-      allow read, list: if true;  // list is needed for queries with where()
+      allow read, list: if true;
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid;
       allow update, delete: if request.auth != null
                              && resource.data.userId == request.auth.uid;
     }
 
-    // Messages: anyone can create (contact form), only the recipient (userId) can read/manage
+    // Messages: anyone can create (contact form), only the recipient can manage
     match /messages/{docId} {
       allow create: if true;
       allow read, update, delete: if request.auth != null
@@ -72,6 +79,24 @@ service cloud.firestore {
                     && request.resource.data.userId == request.auth.uid;
       allow update, delete: if request.auth != null
                              && resource.data.userId == request.auth.uid;
+    }
+
+    // Homepage structural sections: public read, owner write
+    match /sections/{docId} {
+      allow read, list: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Site metrics (homepage): public read, owner write
+    match /siteMetrics/{docId} {
+      allow read, list: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Legacy siteProjects (deprecated, use workItems)
+    match /siteProjects/{docId} {
+      allow read, list: if true;
+      allow write: if request.auth != null;
     }
   }
 }

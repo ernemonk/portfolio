@@ -1,3 +1,7 @@
+// ⚠️  ONE-TIME SEED — DO NOT RUN AGAIN
+// This script was already executed on 2026-02-26.
+// Running it again will create duplicate Firestore documents.
+// To update data, use the admin portal or scripts/add-item.js.
 const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
