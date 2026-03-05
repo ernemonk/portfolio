@@ -1,4 +1,6 @@
-// ⚠️  ONE-TIME SEED — DO NOT RUN AGAIN
+// REMOVED: one-time seed neutralized to prevent accidental DB writes
+console.log('seed-lunchbox script removed.');
+process.exit(0);
 // This script was already executed on 2026-02-26.
 // Running it again will create duplicate Firestore documents.
 // To update data, use the admin portal or scripts/add-item.js.

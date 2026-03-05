@@ -4,8 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "add:venture": "node ./scripts/add-item.js venture",
-    "add:project": "node ./scripts/add-item.js project",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
