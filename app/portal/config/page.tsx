@@ -263,7 +263,8 @@ export default function ConfigPage() {
     execution: { status: "unknown" },
     orchestrator: { status: "unknown" },
     analytics: { status: "unknown" },
-    config: { status: "unknown" }
+    config: { status: "unknown" },
+    data_ingestion: { status: "unknown" }
   });
   
   // Auto-save timeout
@@ -279,11 +280,30 @@ export default function ConfigPage() {
   });
   const [editingProvider, setEditingProvider] = useState<string | null>(null);
 
+  // Credential vault state
+  const [credentials, setCredentials] = useState<configAPI.StoredCredential[]>([]);
+  const [loadingCredentials, setLoadingCredentials] = useState(false);
+  const [newCredProvider, setNewCredProvider] = useState("");
+  const [newCredKey, setNewCredKey] = useState("");
+  const [newCredValue, setNewCredValue] = useState("");
+  const [newCredLabel, setNewCredLabel] = useState("");
+  const [newCredType, setNewCredType] = useState("api_key");
+
+  // Data ingestion state
+  const [dataSources, setDataSources] = useState<configAPI.DataSourceInfo[]>([]);
+  const [loadingDataSources, setLoadingDataSources] = useState(false);
+  const [rateLimits, setRateLimits] = useState<configAPI.RateLimitStatus>({});
+  const [testResults, setTestResults] = useState<{ [source: string]: configAPI.TestSourceResult }>({});
+  const [testingAll, setTestingAll] = useState(false);
+  const [ingestionLogs, setIngestionLogs] = useState<configAPI.IngestionLog[]>([]);
+
   // Load configuration and setup auto-refresh
   useEffect(() => {
     if (!user) return;
     loadConfig();
     checkServiceHealth();
+    loadCredentials();
+    loadDataSources();
     
     // Setup auto-refresh for service health
     if (autoRefreshEnabled) {
@@ -335,7 +355,7 @@ export default function ConfigPage() {
 
   const checkServiceHealth = async (specificService?: string) => {
     const services = specificService ? [specificService] : 
-      ["portfolio", "strategy", "risk", "execution", "orchestrator", "analytics", "config"];
+      ["portfolio", "strategy", "risk", "execution", "orchestrator", "analytics", "config", "data_ingestion"];
     
     const newHealth = { ...serviceHealth };
     
@@ -435,6 +455,122 @@ export default function ConfigPage() {
       URL.revokeObjectURL(url);
     } catch (err) {
       setError(err instanceof configAPI.ConfigAPIError ? err.message : "Failed to generate .env file");
+    }
+  };
+
+  // ── Credential Vault Functions ────────────────────────────────────────
+  const loadCredentials = async () => {
+    setLoadingCredentials(true);
+    try {
+      const creds = await configAPI.getCredentials();
+      setCredentials(creds);
+    } catch (err) {
+      console.error("Failed to load credentials:", err);
+    } finally {
+      setLoadingCredentials(false);
+    }
+  };
+
+  const saveCredential = async () => {
+    if (!newCredProvider || !newCredKey || !newCredValue) {
+      setError("Provider, key name, and value are required");
+      return;
+    }
+    try {
+      await configAPI.storeCredential({
+        provider_name: newCredProvider,
+        credential_key: newCredKey,
+        value: newCredValue,
+        credential_type: newCredType,
+        label: newCredLabel || undefined,
+      });
+      setNewCredProvider("");
+      setNewCredKey("");
+      setNewCredValue("");
+      setNewCredLabel("");
+      setNewCredType("api_key");
+      await loadCredentials();
+    } catch (err) {
+      setError(err instanceof configAPI.ConfigAPIError ? err.message : "Failed to store credential");
+    }
+  };
+
+  const removeCredential = async (id: number) => {
+    try {
+      await configAPI.deleteCredential(id);
+      await loadCredentials();
+    } catch (err) {
+      setError(err instanceof configAPI.ConfigAPIError ? err.message : "Failed to delete credential");
+    }
+  };
+
+  const verifyCredentialAction = async (id: number) => {
+    try {
+      const result = await configAPI.verifyCredential(id);
+      if (result.status === "ok") {
+        setError("");
+        alert(`✓ Credential verified (${result.preview}, ${result.length} chars)`);
+      } else {
+        setError(`Verification failed: ${result.message}`);
+      }
+    } catch (err) {
+      setError("Verification failed");
+    }
+  };
+
+  // ── Data Ingestion Functions ──────────────────────────────────────────
+  const loadDataSources = async () => {
+    setLoadingDataSources(true);
+    try {
+      const [sources, limits] = await Promise.all([
+        configAPI.getIngestionSources().catch(() => []),
+        configAPI.getRateLimits().catch(() => ({})),
+      ]);
+      setDataSources(sources);
+      setRateLimits(limits);
+    } catch (err) {
+      console.error("Failed to load data sources:", err);
+    } finally {
+      setLoadingDataSources(false);
+    }
+  };
+
+  const testAllFree = async () => {
+    setTestingAll(true);
+    try {
+      const result = await configAPI.testAllFreeSources();
+      setTestResults(result.results);
+    } catch (err) {
+      setError("Failed to test free sources");
+    } finally {
+      setTestingAll(false);
+    }
+  };
+
+  const testSingleSource = async (source: string) => {
+    try {
+      const result = await configAPI.testDataSource(source);
+      setTestResults(prev => ({ ...prev, [source]: result }));
+    } catch (err) {
+      setTestResults(prev => ({ ...prev, [source]: { ok: false, message: String(err) } }));
+    }
+  };
+
+  const toggleDataSource = async (sourceName: string) => {
+    try {
+      const result = await configAPI.toggleSource(sourceName);
+      await loadDataSources();
+    } catch (err) {
+      setError("Failed to toggle source");
+    }
+  };
+
+  const updateSourceRateLimit = async (source: string, maxReq: number, period: number) => {
+    try {
+      await configAPI.updateRateLimit(source, maxReq, period);
+      await loadDataSources();
+    } catch (err) {
+      setError("Failed to update rate limit");
     }
   };
 
@@ -587,7 +723,7 @@ export default function ConfigPage() {
             </div>
             <div className="flex items-center gap-4 text-xs text-white/50">
               {hasUnsavedChanges && <span className="text-amber-400">● Unsaved changes</span>}
-              <span>Services: {Object.values(serviceHealth).filter(s => s.status === "healthy").length}/7 online</span>
+              <span>Services: {Object.values(serviceHealth).filter(s => s.status === "healthy").length}/8 online</span>
             </div>
           </div>
         </div>
@@ -597,7 +733,7 @@ export default function ConfigPage() {
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
             🏥 Service Health Dashboard
             <span className="text-sm font-normal text-white/50">
-              ({Object.values(serviceHealth).filter(s => s.status === "healthy").length} of 7 healthy)
+              ({Object.values(serviceHealth).filter(s => s.status === "healthy").length} of 8 healthy)
             </span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4 bg-white/[0.02] border border-white/5 rounded-lg">
@@ -1173,6 +1309,364 @@ export default function ConfigPage() {
               )}
             </div>
           </ConfigSection>
+
+          {/* ─── API Credential Vault ──────────────────────────────────────── */}
+          <ConfigSection
+            title="🔐 API Credential Vault"
+            description="Encrypted storage for API keys and secrets (AES-256)"
+            expanded={expandedSections.has("credentials")}
+            onToggle={() => toggleSection("credentials")}
+          >
+            <div className="space-y-6 mt-4">
+              {/* Stored Credentials */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-white/90 font-medium">Stored Credentials ({credentials.length})</h4>
+                  <button
+                    onClick={loadCredentials}
+                    disabled={loadingCredentials}
+                    className="text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50"
+                  >
+                    {loadingCredentials ? "Loading..." : "🔄 Refresh"}
+                  </button>
+                </div>
+
+                {credentials.length === 0 ? (
+                  <div className="text-sm text-white/40 p-4 bg-white/[0.02] border border-white/5 rounded text-center">
+                    No credentials stored yet. Add one below.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {credentials.map((cred) => (
+                      <div
+                        key={cred.id}
+                        className={`p-3 border rounded flex items-center justify-between ${
+                          cred.is_active
+                            ? "border-white/10 bg-white/[0.02]"
+                            : "border-yellow-500/20 bg-yellow-500/5 opacity-60"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className={`w-2 h-2 rounded-full ${cred.is_set ? "bg-emerald-500" : "bg-red-500"}`} />
+                          <div>
+                            <div className="text-sm text-white/90 font-medium">
+                              {cred.provider_name} / {cred.credential_key}
+                            </div>
+                            <div className="text-xs text-white/40">
+                              {cred.label || cred.credential_type}
+                              {cred.last_verified_at && ` • Verified ${new Date(cred.last_verified_at).toLocaleDateString()}`}
+                              {!cred.is_active && " • DISABLED"}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => verifyCredentialAction(cred.id)}
+                            className="text-xs text-blue-400 hover:text-blue-300"
+                          >
+                            ✓ Verify
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm(`Delete credential for ${cred.provider_name}/${cred.credential_key}?`)) {
+                                removeCredential(cred.id);
+                              }
+                            }}
+                            className="text-xs text-red-400 hover:text-red-300"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Add New Credential */}
+              <div className="p-4 bg-white/[0.03] border border-white/10 rounded">
+                <h4 className="text-white/90 font-medium mb-4">➕ Add API Credential</h4>
+                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm text-white/70">Provider</label>
+                    <select
+                      value={newCredProvider}
+                      onChange={(e) => setNewCredProvider(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white/90"
+                    >
+                      <option value="">Select provider...</option>
+                      <option value="binance">Binance</option>
+                      <option value="binance_public">Binance (Public)</option>
+                      <option value="kraken">Kraken</option>
+                      <option value="kraken_public">Kraken (Public)</option>
+                      <option value="coinbase">Coinbase</option>
+                      <option value="coingecko">CoinGecko</option>
+                      <option value="alpha_vantage">Alpha Vantage</option>
+                      <option value="alpaca">Alpaca</option>
+                      <option value="yahoo_finance">Yahoo Finance</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm text-white/70">Credential Type</label>
+                    <select
+                      value={newCredType}
+                      onChange={(e) => setNewCredType(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white/90"
+                    >
+                      <option value="api_key">API Key</option>
+                      <option value="api_secret">API Secret</option>
+                      <option value="access_token">Access Token</option>
+                      <option value="password">Password</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                  </div>
+                  <ConfigField
+                    label="Key Name"
+                    value={newCredKey}
+                    onChange={setNewCredKey}
+                    placeholder="e.g. api_key, api_secret"
+                  />
+                  <ConfigField
+                    label="Label (optional)"
+                    value={newCredLabel}
+                    onChange={setNewCredLabel}
+                    placeholder="e.g. My Trading Account"
+                  />
+                </div>
+                <div className="mb-4">
+                  <ConfigField
+                    label="Value (will be encrypted)"
+                    value={newCredValue}
+                    onChange={setNewCredValue}
+                    placeholder="Enter API key or secret..."
+                    sensitive
+                    description="🔒 Encrypted with AES-256 before storage. Never stored in plaintext."
+                  />
+                </div>
+                <button
+                  onClick={saveCredential}
+                  disabled={!newCredProvider || !newCredKey || !newCredValue}
+                  className="px-4 py-2 bg-emerald-600/70 hover:bg-emerald-600 text-white text-sm rounded transition-colors disabled:opacity-50"
+                >
+                  🔐 Encrypt & Store
+                </button>
+              </div>
+            </div>
+          </ConfigSection>
+
+          {/* ─── Data Ingestion ─────────────────────────────────────────── */}
+          <ConfigSection
+            title="📊 Data Ingestion"
+            description="Market data sources, rate limits, and live testing"
+            expanded={expandedSections.has("ingestion")}
+            onToggle={() => toggleSection("ingestion")}
+          >
+            <div className="space-y-6 mt-4">
+              {/* Quick Actions */}
+              <div className="flex items-center gap-3 p-3 bg-white/[0.02] border border-white/5 rounded">
+                <button
+                  onClick={testAllFree}
+                  disabled={testingAll}
+                  className="px-4 py-2 text-sm bg-emerald-600/70 hover:bg-emerald-600 text-white rounded transition-colors disabled:opacity-50"
+                >
+                  {testingAll ? "⏳ Testing..." : "🧪 Test All Free APIs"}
+                </button>
+                <button
+                  onClick={loadDataSources}
+                  disabled={loadingDataSources}
+                  className="px-3 py-2 text-sm bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 rounded transition-colors disabled:opacity-50"
+                >
+                  🔄 Refresh Sources
+                </button>
+                {Object.keys(testResults).length > 0 && (
+                  <span className="text-sm text-white/50">
+                    ✓ {Object.values(testResults).filter(r => r.ok).length}/{Object.keys(testResults).length} passed
+                  </span>
+                )}
+              </div>
+
+              {/* Test Results */}
+              {Object.keys(testResults).length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {Object.entries(testResults).map(([source, result]) => (
+                    <div
+                      key={source}
+                      className={`p-3 border rounded ${
+                        result.ok
+                          ? "border-emerald-500/30 bg-emerald-500/5"
+                          : "border-red-500/30 bg-red-500/5"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`w-2 h-2 rounded-full ${result.ok ? "bg-emerald-500" : "bg-red-500"}`} />
+                        <span className="text-sm text-white/90 font-medium">{source.replace(/_/g, " ")}</span>
+                      </div>
+                      <p className="text-xs text-white/50 truncate">{result.message}</p>
+                      {result.response_time_ms && (
+                        <p className="text-xs text-white/30">{result.response_time_ms}ms</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Data Sources List */}
+              <div className="space-y-3">
+                <h4 className="text-white/90 font-medium">
+                  Data Sources ({dataSources.length})
+                </h4>
+                {dataSources.length === 0 ? (
+                  <div className="text-sm text-white/40 p-4 bg-white/[0.02] border border-white/5 rounded text-center">
+                    {loadingDataSources ? "Loading data sources..." : "Start the data_ingestion service to see sources."}
+                  </div>
+                ) : (
+                  dataSources.map((source) => (
+                    <div
+                      key={source.name}
+                      className={`p-4 border rounded transition-colors ${
+                        source.is_active
+                          ? "border-white/10 bg-white/[0.02]"
+                          : "border-yellow-500/20 bg-yellow-500/5 opacity-60"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              source.status === "active"
+                                ? "bg-emerald-500"
+                                : source.status === "error"
+                                ? "bg-red-500"
+                                : "bg-yellow-500"
+                            }`}
+                          />
+                          <h5 className="text-white/90 font-medium">{source.display_name}</h5>
+                          <span className="text-xs bg-white/5 text-white/40 px-2 py-0.5 rounded">
+                            {source.provider_type}
+                          </span>
+                          {!source.requires_auth && (
+                            <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">FREE</span>
+                          )}
+                          {source.requires_auth && (
+                            <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-0.5 rounded">KEY REQUIRED</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => testSingleSource(source.name)}
+                            className="text-xs text-blue-400 hover:text-blue-300"
+                          >
+                            🧪 Test
+                          </button>
+                          <button
+                            onClick={() => toggleDataSource(source.name)}
+                            className={`text-xs px-2 py-0.5 rounded ${
+                              source.is_active
+                                ? "bg-yellow-600/20 text-yellow-300 hover:bg-yellow-600/30"
+                                : "bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30"
+                            }`}
+                          >
+                            {source.is_active ? "⏸ Pause" : "▶ Enable"}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="text-white/40">Rate Limit:</span>
+                          <span className="text-white/70 ml-1">{source.rate_limit_requests} / {source.rate_limit_period_seconds}s</span>
+                        </div>
+                        <div>
+                          <span className="text-white/40">Poll:</span>
+                          <span className="text-white/70 ml-1">{source.poll_interval_seconds}s</span>
+                        </div>
+                        <div>
+                          <span className="text-white/40">Errors:</span>
+                          <span className={`ml-1 ${source.error_count > 0 ? "text-red-400" : "text-white/70"}`}>
+                            {source.error_count}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-white/40">Last OK:</span>
+                          <span className="text-white/70 ml-1">
+                            {source.last_success_at
+                              ? new Date(source.last_success_at).toLocaleTimeString()
+                              : "Never"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {source.enabled_pairs.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {source.enabled_pairs.map((pair) => (
+                            <span
+                              key={pair}
+                              className="text-xs bg-white/5 text-white/50 px-2 py-0.5 rounded"
+                            >
+                              {pair}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Inline Rate Limit Editor */}
+                      <div className="mt-3 flex items-center gap-3 pt-3 border-t border-white/5">
+                        <span className="text-xs text-white/40">Rate limit:</span>
+                        <input
+                          type="number"
+                          defaultValue={source.rate_limit_requests}
+                          className="w-16 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white/90"
+                          onBlur={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (val && val !== source.rate_limit_requests) {
+                              updateSourceRateLimit(source.name, val, source.rate_limit_period_seconds);
+                            }
+                          }}
+                        />
+                        <span className="text-xs text-white/40">req /</span>
+                        <input
+                          type="number"
+                          defaultValue={source.rate_limit_period_seconds}
+                          className="w-16 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white/90"
+                          onBlur={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (val && val !== source.rate_limit_period_seconds) {
+                              updateSourceRateLimit(source.name, source.rate_limit_requests, val);
+                            }
+                          }}
+                        />
+                        <span className="text-xs text-white/40">sec</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Rate Limit Monitor */}
+              {Object.keys(rateLimits).length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-white/90 font-medium">⏱️ Rate Limit Status (Live)</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                    {Object.entries(rateLimits).map(([source, limit]) => (
+                      <div key={source} className="p-3 bg-white/[0.02] border border-white/5 rounded">
+                        <div className="text-xs text-white/50 mb-1">{source.replace(/_/g, " ")}</div>
+                        <div className="text-sm text-white/90">
+                          {limit.tokens_remaining} / {limit.max_requests}
+                        </div>
+                        <div className="mt-1 w-full bg-white/10 rounded-full h-1.5">
+                          <div
+                            className="bg-emerald-500 h-1.5 rounded-full transition-all"
+                            style={{ width: `${Math.min(100, (limit.tokens_remaining / limit.max_requests) * 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </ConfigSection>
         </div>
 
         {/* Dynamic Configuration Summary Panel */}
@@ -1260,8 +1754,8 @@ export default function ConfigPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-white/50">Services:</span>
-                  <span className={Object.values(serviceHealth).filter(s => s.status === 'healthy').length >= 5 ? 'text-green-400' : 'text-yellow-400'}>
-                    {Object.values(serviceHealth).filter(s => s.status === 'healthy').length}/7 up
+                  <span className={Object.values(serviceHealth).filter(s => s.status === 'healthy').length >= 6 ? 'text-green-400' : 'text-yellow-400'}>
+                    {Object.values(serviceHealth).filter(s => s.status === 'healthy').length}/8 up
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -1284,7 +1778,7 @@ export default function ConfigPage() {
               <button
                 onClick={() => {
                   // Expand all sections for quick review
-                  setExpandedSections(new Set(["database", "exchanges", "llm", "service", "pricing"]));
+                  setExpandedSections(new Set(["database", "exchanges", "llm", "service", "pricing", "credentials", "ingestion"]));
                 }}
                 className="px-3 py-1 text-xs bg-white/5 hover:bg-white/10 text-white/60 border border-white/10 rounded transition-colors"
               >
@@ -1323,8 +1817,8 @@ export default function ConfigPage() {
           </div>
           <div className="flex items-center gap-4">
             <span>Trading OS v1.0 • Backend Config Center</span>
-            <span className={Object.values(serviceHealth).filter(s => s.status === 'healthy').length >= 5 ? 'text-emerald-400' : 'text-yellow-400'}>
-              ● System {Object.values(serviceHealth).filter(s => s.status === 'healthy').length >= 5 ? 'Healthy' : 'Degraded'}
+            <span className={Object.values(serviceHealth).filter(s => s.status === 'healthy').length >= 6 ? 'text-emerald-400' : 'text-yellow-400'}>
+              ● System {Object.values(serviceHealth).filter(s => s.status === 'healthy').length >= 6 ? 'Healthy' : 'Degraded'}
             </span>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import PortalShell from "@/components/portal/PortalShell";
+import ModelDashboard from "@/components/portal/ModelDashboard";
 import * as api from "@/lib/trading-api";
 import { PipelineFlow, StageInfo } from "@/components/trading/PipelineFlow";
 import { DecisionTrace } from "@/components/trading/DecisionTrace";
@@ -795,31 +796,55 @@ export default function TradingPage() {
   const [lastRefresh,     setLastRefresh]     = useState<Date | null>(null);
   const [killHistory,     setKillHistory]     = useState<Date | null>(null);
   const [showTimeline,    setShowTimeline]    = useState(false);
+  const [activeSection,   setActiveSection]   = useState<"overview" | "models" | "strategies" | "analytics">("overview");
   const killRef = useRef(killActive);
 
   // ── Fetch all data ─────────────────────────────────────────────────────────
   const refresh = useCallback(async (silent = false) => {
     if (!silent) setRefreshing(true);
-    const [h, st, tr, rc, m, qd, al, snap, dp] = await Promise.allSettled([
-      api.getAllHealth(),
-      api.getStrategies(),
-      api.getTrades(30),
-      api.getRiskConfig(),
-      api.getStrategyMetrics(),
-      api.getQueueDepth(),
-      api.getAuditLog(50),
-      api.getSnapshot(),
-      api.getDailyPnl(),
-    ]);
-    if (h.status    === "fulfilled") setHealth(h.value);
-    if (st.status   === "fulfilled") setStrategies(st.value);
-    if (tr.status   === "fulfilled") setTrades(tr.value);
-    if (rc.status   === "fulfilled") setRiskConfig(rc.value);
-    if (m.status    === "fulfilled") setMetrics(m.value);
-    if (qd.status   === "fulfilled") setQueueDepth((qd.value as api.QueueDepth).depth ?? 0);
-    if (al.status   === "fulfilled") setAuditLog(al.value);
-    if (snap.status === "fulfilled") setSnapshot(snap.value);
-    if (dp.status   === "fulfilled") setDailyPnl(dp.value);
+    
+    // Stagger requests to avoid overwhelming backend services
+    const staggerDelay = 200; // 200ms between requests
+    
+    try {
+      // Fetch in batches to reduce concurrent load
+      const [h] = await Promise.allSettled([api.getAllHealth()]);
+      await new Promise(r => setTimeout(r, staggerDelay));
+      
+      const [st, tr] = await Promise.allSettled([
+        api.getStrategies(),
+        api.getTrades(30),
+      ]);
+      await new Promise(r => setTimeout(r, staggerDelay));
+      
+      const [rc, m] = await Promise.allSettled([
+        api.getRiskConfig(),
+        api.getStrategyMetrics(),
+      ]);
+      await new Promise(r => setTimeout(r, staggerDelay));
+      
+      const [qd, al, snap, dp] = await Promise.allSettled([
+        api.getQueueDepth(),
+        api.getAuditLog(50),
+        api.getSnapshot(),
+        api.getDailyPnl(),
+      ]);
+      
+      // Process results
+      if (h.status    === "fulfilled") setHealth(h.value);
+      if (st.status   === "fulfilled") setStrategies(st.value);
+      if (tr.status   === "fulfilled") setTrades(tr.value);
+      if (rc.status   === "fulfilled") setRiskConfig(rc.value);
+      if (m.status    === "fulfilled") setMetrics(m.value);
+      if (qd.status   === "fulfilled") setQueueDepth((qd.value as api.QueueDepth).depth ?? 0);
+      if (al.status   === "fulfilled") setAuditLog(al.value);
+      if (snap.status === "fulfilled") setSnapshot(snap.value);
+      if (dp.status   === "fulfilled") setDailyPnl(dp.value);
+      
+    } catch (error) {
+      console.warn('Refresh failed:', error);
+    }
+    
     setLastRefresh(new Date());
     setLoading(false);
     setRefreshing(false);
@@ -827,7 +852,7 @@ export default function TradingPage() {
 
   useEffect(() => {
     refresh();
-    const t = setInterval(() => refresh(true), 30_000);
+    const t = setInterval(() => refresh(true), 60_000); // Reduced from 30s to 60s
     return () => clearInterval(t);
   }, [refresh]);
 
@@ -1030,6 +1055,23 @@ export default function TradingPage() {
         {/* ── Capital Overview ── */}
         <CapitalBar snapshot={snapshot} />
 
+        {/* ── Section Navigation ── */}
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+          {(["overview", "models", "strategies", "analytics"] as const).map((section) => (
+            <button
+              key={section}
+              onClick={() => setActiveSection(section)}
+              className={`px-3 py-1.5 rounded text-[11px] font-mono font-semibold transition-all ${
+                activeSection === section
+                  ? "bg-white/10 text-white border border-white/20"
+                  : "bg-white/[0.02] text-white/40 hover:text-white/60 border border-white/5"
+              }`}
+            >
+              {section.charAt(0).toUpperCase() + section.slice(1)}
+            </button>
+          ))}
+        </div>
+
         {/* ── System State Banner ── */}
         <div className={`flex items-center gap-4 px-3 py-2 rounded-lg border overflow-x-auto transition-colors duration-500 ${killActive ? "bg-red-950/10 border-red-500/15" : "bg-white/[0.02] border-white/[0.05]"}`}>
           <Mono dim>Services</Mono>
@@ -1060,66 +1102,198 @@ export default function TradingPage() {
           </div>
         </div>
 
-        {/* ── Pipeline Flow ── */}
-        {loading ? (
-          <div className="flex items-center gap-2.5 text-white/30 text-sm py-6 pl-1">
-            <Spin /> initializing trading pipeline…
-          </div>
-        ) : (
-          <PipelineFlow
-            stages={stages}
-            activeStage={activeStage}
-            onStageClick={(id) => setActiveStage(prev => prev === id ? null : id)}
-          />
+        {/* ── Section Content ── */}
+        {activeSection === "overview" && (
+          <>
+            {/* ── Pipeline Flow ── */}
+            {loading ? (
+              <div className="flex items-center gap-2.5 text-white/30 text-sm py-6 pl-1">
+                <Spin /> initializing trading pipeline…
+              </div>
+            ) : (
+              <PipelineFlow
+                stages={stages}
+                activeStage={activeStage}
+                onStageClick={(id) => setActiveStage(prev => prev === id ? null : id)}
+              />
+            )}
+
+            {/* ── Pipeline run result ── */}
+            {pipelineResult != null && (
+              <PipelineResultCard result={pipelineResult} onClose={() => setPipelineResult(null)} />
+            )}
+
+            {/* ── Event Timeline ── */}
+            <Panel>
+              <div
+                className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 cursor-pointer select-none"
+                onClick={() => setShowTimeline(prev => !prev)}
+              >
+                <div className="flex items-center gap-2">
+                  <Mono>System Events</Mono>
+                  <Mono dim>{auditLog.length} entries</Mono>
+                </div>
+                <span className="text-white/25 text-xs font-mono">{showTimeline ? "▲" : "▼"}</span>
+              </div>
+              {showTimeline && <EventTimeline auditLog={auditLog} />}
+            </Panel>
+
+            {/* ── Stage Drill Panel ── */}
+            {activeStage && (
+              <Panel>
+                <PanelHeader
+                  label={activeStage}
+                  accent={STAGE_ACCENT[activeStage]}
+                  right={
+                    <button onClick={() => setActiveStage(null)} className="text-white/25 hover:text-white/60 transition-colors text-lg leading-none">×</button>
+                  }
+                />
+                {renderDrill(activeStage)}
+              </Panel>
+            )}
+
+            {/* ── Recent Trades ── */}
+            <Panel>
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
+                <Mono>Recent Trades</Mono>
+                <div className="flex items-center gap-3">
+                  <Mono dim>{trades.length} records</Mono>
+                  <button onClick={() => refresh(true)} className="text-[10px] font-mono text-white/25 hover:text-white/55 transition-colors">↻</button>
+                </div>
+              </div>
+              <div className="px-4 pb-4">
+                <TradeLedger trades={trades} onTrace={setTraceId} />
+              </div>
+            </Panel>
+          </>
         )}
 
-        {/* ── Pipeline run result ── */}
-        {pipelineResult != null && (
-          <PipelineResultCard result={pipelineResult} onClose={() => setPipelineResult(null)} />
+        {activeSection === "models" && (
+          <ModelDashboard />
         )}
 
-        {/* ── Event Timeline ── */}
-        <Panel>
-          <div
-            className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 cursor-pointer select-none"
-            onClick={() => setShowTimeline(prev => !prev)}
-          >
-            <div className="flex items-center gap-2">
-              <Mono>System Events</Mono>
-              <Mono dim>{auditLog.length} entries</Mono>
-            </div>
-            <span className="text-white/25 text-xs font-mono">{showTimeline ? "▲" : "▼"}</span>
-          </div>
-          {showTimeline && <EventTimeline auditLog={auditLog} />}
-        </Panel>
+        {activeSection === "strategies" && (
+          <>
+            {/* ── Strategy Configuration ── */}
+            <Panel>
+              <PanelHeader label="Strategy Configuration" accent="violet" />
+              <div className="space-y-4 px-4 py-4">
+                {loading ? (
+                  <div className="flex items-center gap-2 text-white/30">
+                    <Spin sm /> loading strategies…
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {strategies.map(st => (
+                      <div
+                        key={st.name}
+                        className="flex items-center justify-between px-3 py-2 rounded bg-white/[0.03] border border-white/5 hover:border-white/10 transition-colors"
+                      >
+                        <div>
+                          <div className="text-sm font-mono text-white">{st.name}</div>
+                          <div className="text-[10px] text-white/40 mt-1">{st.description || "No description"}</div>
+                        </div>
+                        <button
+                          onClick={() => toggleStrategy(st.name, !st.enabled)}
+                          disabled={toggling === st.name}
+                          className={`px-3 py-1 rounded text-[10px] font-mono font-semibold transition-colors ${
+                            st.enabled
+                              ? "bg-emerald-900/40 text-emerald-300 border border-emerald-400/30"
+                              : "bg-white/5 text-white/40 border border-white/10"
+                          } ${toggling === st.name ? "opacity-50" : ""}`}
+                        >
+                          {toggling === st.name ? "…" : st.enabled ? "ENABLED" : "DISABLED"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Panel>
 
-        {/* ── Stage Drill Panel ── */}
-        {activeStage && (
-          <Panel>
-            <PanelHeader
-              label={activeStage}
-              accent={STAGE_ACCENT[activeStage]}
-              right={
-                <button onClick={() => setActiveStage(null)} className="text-white/25 hover:text-white/60 transition-colors text-lg leading-none">×</button>
-              }
-            />
-            {renderDrill(activeStage)}
-          </Panel>
+            {/* ── Risk Configuration ── */}
+            <Panel>
+              <PanelHeader label="Risk Configuration" accent="amber" />
+              <RiskDrill riskConfig={riskConfig} onSave={saveRiskConfig} onKillToggle={toggleKillSwitch} killActive={killActive} snapshot={snapshot} />
+            </Panel>
+
+            {/* ── Strategy Metrics ── */}
+            <Panel>
+              <PanelHeader label="Strategy Metrics" accent="cyan" />
+              <div className="px-4 py-4">
+                {metrics.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-[10px] font-mono text-white/60">
+                      <thead>
+                        <tr className="border-b border-white/10">
+                          {["Strategy", "Trades", "Win %", "Avg PnL", "Total PnL"].map(h => (
+                            <th key={h} className="text-left py-2 pr-4">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {metrics.map(m => (
+                          <tr key={m.strategy_name} className="border-b border-white/[0.04] hover:bg-white/[0.02]">
+                            <td className="py-2 pr-4 text-white/75">{m.strategy_name}</td>
+                            <td>{m.total_trades ?? 0}</td>
+                            <td>{((m.win_rate ?? 0) * 100).toFixed(1)}%</td>
+                            <td>${(m.avg_pnl_usd ?? 0).toFixed(2)}</td>
+                            <td className={`font-semibold ${(m.total_pnl_usd ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                              ${(m.total_pnl_usd ?? 0).toFixed(2)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-white/30 text-[10px]">No metrics available</div>
+                )}
+              </div>
+            </Panel>
+          </>
         )}
 
-        {/* ── Recent Trades ── */}
-        <Panel>
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
-            <Mono>Recent Trades</Mono>
-            <div className="flex items-center gap-3">
-              <Mono dim>{trades.length} records</Mono>
-              <button onClick={() => refresh(true)} className="text-[10px] font-mono text-white/25 hover:text-white/55 transition-colors">↻</button>
-            </div>
-          </div>
-          <div className="px-4 pb-4">
-            <TradeLedger trades={trades} onTrace={setTraceId} />
-          </div>
-        </Panel>
+        {activeSection === "analytics" && (
+          <>
+            {/* ── Daily P&L ── */}
+            <Panel>
+              <PanelHeader label="Daily P&L" accent="green" />
+              <div className="px-4 py-4">
+                {dailyPnl.length > 0 ? (
+                  <div className="space-y-2">
+                    {dailyPnl.slice(-7).reverse().map((entry, idx) => (
+                      <div key={idx} className="flex items-center justify-between px-3 py-2 bg-white/[0.03] rounded border border-white/5">
+                        <span className="text-[10px] font-mono text-white/50">{entry.date || "—"}</span>
+                        <span className={`text-[10px] font-mono font-semibold ${(entry.pnl_usd ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                          ${(entry.pnl_usd ?? 0).toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-white/30 text-[10px]">No P&L data available</div>
+                )}
+              </div>
+            </Panel>
+
+            {/* ── Health Status ── */}
+            <Panel>
+              <PanelHeader label="System Health" accent="indigo" />
+              <div className="px-4 py-4">
+                <div className="space-y-2">
+                  {health.map((h, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-2 bg-white/[0.03] rounded border border-white/5">
+                      <span className={`w-2 h-2 rounded-full ${h.result?.status === "ok" ? "bg-emerald-400" : h.error ? "bg-red-400" : "bg-yellow-400"}`} />
+                      <span className="text-[10px] font-mono text-white/60 flex-1">{h.service}</span>
+                      <span className="text-[9px] font-mono text-white/30">{h.result?.status || "unknown"}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Panel>
+          </>
+        )}
 
       </div>
 
