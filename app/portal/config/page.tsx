@@ -1,48 +1,63 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import PortalShell from "@/components/portal/PortalShell";
 import { useAuth } from "@/context/AuthContext";
 import * as configAPI from "@/lib/config-api";
 
-// ─── Component Types ──────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────
 
-interface ConfigSectionProps {
-  title: string;
-  description: string;
+interface ServiceHealth {
+  status: string;
+  service: string;
+  timestamp: number;
+}
+
+// ─── Components ───────────────────────────────────────────────────────────
+
+function StatusBadge({ status }: { status: string }) {
+  const colors: Record<string, string> = {
+    ok: "bg-emerald-400/10 text-emerald-400",
+    healthy: "bg-emerald-400/10 text-emerald-400",
+    degraded: "bg-yellow-400/10 text-yellow-400",
+    error: "bg-red-400/10 text-red-400",
+    unhealthy: "bg-red-400/10 text-red-400",
+  };
+  return (
+    <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[status] || colors.error}`}>
+      {status.toUpperCase()}
+    </span>
+  );
+}
+
+function ConfigSection({ 
+  title, 
+  children, 
+  expanded = false,
+  onToggle 
+}: { 
+  title: string; 
   children: React.ReactNode;
   expanded?: boolean;
   onToggle?: () => void;
-}
-
-interface ConfigFieldProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: "text" | "password" | "number" | "url";
-  placeholder?: string;
-  description?: string;
-  sensitive?: boolean;
-}
-
-// ─── UI Components ────────────────────────────────────────────────────────
-
-function ConfigSection({ title, description, children, expanded = false, onToggle }: ConfigSectionProps) {
+}) {
   return (
-    <div className="border border-white/10 rounded-lg bg-white/[0.02]">
+    <div className="bg-white/[0.03] border border-white/5 rounded-xl overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-4 text-left hover:bg-white/[0.02] transition-colors"
+        className="w-full px-5 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
       >
-        <div>
-          <h3 className="text-white font-medium">{title}</h3>
-          <p className="text-sm text-white/50">{description}</p>
-        </div>
-        <span className="text-white/30 text-lg">
-          {expanded ? "▲" : "▼"}
-        </span>
+        <h3 className="text-lg font-semibold">{title}</h3>
+        <svg
+          className={`w-5 h-5 text-white/40 transition-transform ${expanded ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
       </button>
       {expanded && (
-        <div className="px-4 pb-4 border-t border-white/5">
+        <div className="px-5 pb-5 border-t border-white/5">
           {children}
         </div>
       )}
@@ -50,1778 +65,448 @@ function ConfigSection({ title, description, children, expanded = false, onToggl
   );
 }
 
-function ConfigField({ label, value, onChange, type = "text", placeholder, description, sensitive }: ConfigFieldProps) {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isValid, setIsValid] = useState(true);
-  const [validationMessage, setValidationMessage] = useState("");
-  const [isConnecting, setIsConnecting] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout>();
-  
-  const inputType = sensitive && !showPassword ? "password" : type;
-
-  // Real-time validation
-  const validateField = useCallback(async (fieldValue: string) => {
-    if (!fieldValue) {
-      setIsValid(true);
-      setValidationMessage("");
-      return;
-    }
-
-    // URL validation
-    if (type === "url") {
-      try {
-        new URL(fieldValue);
-        setIsValid(true);
-        setValidationMessage("✓ Valid URL");
-      } catch {
-        setIsValid(false);
-        setValidationMessage("Invalid URL format");
-      }
-    }
-    
-    // Port validation
-    if (type === "number" && label.toLowerCase().includes("port")) {
-      const port = parseInt(fieldValue);
-      if (port < 1 || port > 65535) {
-        setIsValid(false);
-        setValidationMessage("Port must be between 1-65535");
-      } else {
-        setIsValid(true);
-        setValidationMessage("✓ Valid port");
-      }
-    }
-  }, [type, label]);
-
-  const handleChange = (newValue: string) => {
-    onChange(newValue);
-    
-    // Clear existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    
-    // Debounced validation
-    timeoutRef.current = setTimeout(() => {
-      validateField(newValue);
-    }, 500);
-  };
-
-  // Test connection for database/API fields
-  const testConnection = async () => {
-    if (!value) return;
-    
-    setIsConnecting(true);
-    try {
-      // This would be connected to actual connection testing
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate test
-      setIsValid(true);
-      setValidationMessage("✓ Connection successful");
-    } catch {
-      setIsValid(false);
-      setValidationMessage("Connection failed");
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const showTestButton = label.toLowerCase().includes("host") || 
-                       label.toLowerCase().includes("url") || 
-                       (sensitive && label.toLowerCase().includes("key"));
-
-  return (
-    <div className="space-y-2">
-      <label className="block text-sm text-white/70">{label}</label>
-      <div className="relative">
-        <input
-          type={inputType}
-          value={sensitive && !showPassword ? (value ? "●●●●●●●●" : "") : value}
-          onChange={(e) => handleChange(e.target.value)}
-          placeholder={placeholder}
-          className={`w-full bg-white/5 border rounded px-3 py-2 text-sm text-white/90 placeholder:text-white/30 focus:outline-none transition-colors ${
-            isValid ? 'border-white/10 focus:border-emerald-500/50' : 'border-red-500/50 focus:border-red-500'
-          } ${showTestButton ? 'pr-20' : 'pr-10'}`}
-          onFocus={(e) => {
-            if (sensitive && !showPassword) {
-              setShowPassword(true);
-              e.target.value = value;
-            }
-          }}
-          onBlur={() => {
-            if (sensitive) setShowPassword(false);
-          }}
-        />
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          {showTestButton && value && (
-            <button
-              type="button"
-              onClick={testConnection}
-              disabled={isConnecting}
-              className="text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50"
-            >
-              {isConnecting ? "..." : "Test"}
-            </button>
-          )}
-          {sensitive && (
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="text-white/30 hover:text-white/60 text-xs ml-1"
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
-          )}
-        </div>
-      </div>
-      {validationMessage && (
-        <p className={`text-xs ${isValid ? 'text-emerald-400' : 'text-red-400'}`}>
-          {validationMessage}
-        </p>
-      )}
-      {description && <p className="text-xs text-white/40">{description}</p>}
-    </div>
-  );
-}
-
-function ServiceHealthIndicator({ 
-  service, 
-  status, 
-  lastChecked, 
-  onRefresh 
-}: { 
-  service: string; 
-  status: "healthy" | "unhealthy" | "unknown" | "checking"; 
-  lastChecked?: Date;
-  onRefresh?: () => void;
+function ConfigField({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+  disabled = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: "text" | "password" | "number";
+  placeholder?: string;
+  disabled?: boolean;
 }) {
-  const colors = {
-    healthy: "bg-emerald-500",
-    unhealthy: "bg-red-500",
-    unknown: "bg-yellow-500",
-    checking: "bg-blue-500 animate-pulse"
-  };
-  
-  const statusText = {
-    healthy: "Online",
-    unhealthy: "Offline", 
-    unknown: "Unknown",
-    checking: "Checking..."
-  };
-  
   return (
-    <div className="flex items-center justify-between group hover:bg-white/[0.02] p-2 rounded transition-colors">
-      <div className="flex items-center gap-2">
-        <span className={`w-2 h-2 rounded-full ${colors[status]}`} />
-        <span className="text-sm text-white/60">{service}</span>
-        <span className="text-xs text-white/40">({statusText[status]})</span>
+    <div className="space-y-1.5">
+      <label className="text-sm text-white/60">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        disabled={disabled}
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-400/50 disabled:opacity-50"
+      />
+    </div>
+  );
+}
+
+function CredentialRow({
+  credential,
+  onDelete,
+  onToggle,
+}: {
+  credential: configAPI.Credential;
+  onDelete: () => void;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg">
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{credential.provider_name}</span>
+          <span className="text-white/40 text-sm">/ {credential.credential_key}</span>
+        </div>
+        {credential.label && (
+          <p className="text-sm text-white/40 mt-0.5">{credential.label}</p>
+        )}
       </div>
       <div className="flex items-center gap-2">
-        {lastChecked && (
-          <span className="text-xs text-white/30">
-            {lastChecked.toLocaleTimeString()}
-          </span>
-        )}
-        {onRefresh && (
-          <button
-            onClick={onRefresh}
-            className="opacity-0 group-hover:opacity-100 text-xs text-blue-400 hover:text-blue-300 transition-opacity"
-          >
-            ↻
-          </button>
-        )}
+        <button
+          onClick={onToggle}
+          className={`px-2 py-1 rounded text-xs ${
+            credential.is_active 
+              ? "bg-emerald-400/10 text-emerald-400" 
+              : "bg-white/5 text-white/40"
+          }`}
+        >
+          {credential.is_active ? "Active" : "Inactive"}
+        </button>
+        <button
+          onClick={onDelete}
+          className="p-1 text-red-400/60 hover:text-red-400 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
       </div>
     </div>
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────
+// ─── Main Page ────────────────────────────────────────────────────────────
 
 export default function ConfigPage() {
   const { user } = useAuth();
-  const [config, setConfig] = useState<configAPI.BackendConfig | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [health, setHealth] = useState<ServiceHealth | null>(null);
+  const [config, setConfig] = useState<configAPI.BackendConfiguration | null>(null);
+  const [credentials, setCredentials] = useState<configAPI.Credential[]>([]);
+  const [expandedSection, setExpandedSection] = useState<string | null>("database");
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  
-  // Section expansion state
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["database"]));
-  
-  // Service health tracking with enhanced state
-  const [serviceHealth, setServiceHealth] = useState<{ 
-    [key: string]: {
-      status: "healthy" | "unhealthy" | "unknown" | "checking";
-      lastChecked?: Date;
-    }
-  }>({
-    portfolio: { status: "unknown" },
-    strategy: { status: "unknown" }, 
-    risk: { status: "unknown" },
-    execution: { status: "unknown" },
-    orchestrator: { status: "unknown" },
-    analytics: { status: "unknown" },
-    config: { status: "unknown" },
-    data_ingestion: { status: "unknown" }
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
+  // New credential form state
+  const [newCred, setNewCred] = useState({
+    provider_name: "",
+    credential_key: "",
+    value: "",
+    label: "",
   });
-  
-  // Auto-save timeout
-  const autoSaveTimeout = useRef<NodeJS.Timeout>();
-  const healthCheckInterval = useRef<NodeJS.Timeout>();
-  
-  // Provider management state
-  const [showAddProvider, setShowAddProvider] = useState(false);
-  const [newProvider, setNewProvider] = useState({
-    name: "",
-    displayName: "",
-    fields: {} as { [key: string]: string }
-  });
-  const [editingProvider, setEditingProvider] = useState<string | null>(null);
+  const [addingCred, setAddingCred] = useState(false);
 
-  // Credential vault state
-  const [credentials, setCredentials] = useState<configAPI.StoredCredential[]>([]);
-  const [loadingCredentials, setLoadingCredentials] = useState(false);
-  const [newCredProvider, setNewCredProvider] = useState("");
-  const [newCredKey, setNewCredKey] = useState("");
-  const [newCredValue, setNewCredValue] = useState("");
-  const [newCredLabel, setNewCredLabel] = useState("");
-  const [newCredType, setNewCredType] = useState("api_key");
-
-  // Data ingestion state
-  const [dataSources, setDataSources] = useState<configAPI.DataSourceInfo[]>([]);
-  const [loadingDataSources, setLoadingDataSources] = useState(false);
-  const [rateLimits, setRateLimits] = useState<configAPI.RateLimitStatus>({});
-  const [testResults, setTestResults] = useState<{ [source: string]: configAPI.TestSourceResult }>({});
-  const [testingAll, setTestingAll] = useState(false);
-  const [ingestionLogs, setIngestionLogs] = useState<configAPI.IngestionLog[]>([]);
-
-  // Load configuration and setup auto-refresh
-  useEffect(() => {
-    if (!user) return;
-    loadConfig();
-    checkServiceHealth();
-    loadCredentials();
-    loadDataSources();
-    
-    // Setup auto-refresh for service health
-    if (autoRefreshEnabled) {
-      healthCheckInterval.current = setInterval(() => {
-        checkServiceHealth();
-      }, 10000); // Check every 10 seconds
-    }
-    
-    return () => {
-      if (healthCheckInterval.current) {
-        clearInterval(healthCheckInterval.current);
-      }
-      if (autoSaveTimeout.current) {
-        clearTimeout(autoSaveTimeout.current);
-      }
-    };
-  }, [user, autoRefreshEnabled]);
-  
-  // Auto-save when config changes
-  useEffect(() => {
-    if (!config || !autoSaveEnabled || saving) return;
-    
-    if (autoSaveTimeout.current) {
-      clearTimeout(autoSaveTimeout.current);
-    }
-    
-    autoSaveTimeout.current = setTimeout(() => {
-      if (hasUnsavedChanges) {
-        saveConfig();
-      }
-    }, 2000); // Auto-save after 2 seconds of no changes
-  }, [config, autoSaveEnabled, hasUnsavedChanges, saving]);
-
-  const loadConfig = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
-    setError("");
+    setError(null);
     try {
-      const configData = await configAPI.getConfig();
+      const [healthData, configData, credsData] = await Promise.all([
+        configAPI.getHealth().catch(() => null),
+        configAPI.getConfig().catch(() => null),
+        configAPI.getCredentials().catch(() => []),
+      ]);
+      setHealth(healthData);
       setConfig(configData);
+      setCredentials(credsData);
     } catch (err) {
-      console.error("Failed to load config:", err);
-      setError(err instanceof configAPI.ConfigAPIError ? err.message : "Failed to load configuration");
-      // Use default config as fallback
-      setConfig(configAPI.getDefaultConfig());
+      setError(err instanceof Error ? err.message : "Failed to load configuration");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const checkServiceHealth = async (specificService?: string) => {
-    const services = specificService ? [specificService] : 
-      ["portfolio", "strategy", "risk", "execution", "orchestrator", "analytics", "config", "data_ingestion"];
-    
-    const newHealth = { ...serviceHealth };
-    
-    // Set checking status
-    services.forEach(service => {
-      newHealth[service] = { 
-        ...newHealth[service], 
-        status: "checking" 
-      };
-    });
-    setServiceHealth(newHealth);
-    
-    // Check each service
-    const promises = services.map(async (service) => {
-      try {
-        const result = await configAPI.testConnection(service);
-        return {
-          service,
-          status: result.status === "ok" ? "healthy" as const : "unhealthy" as const,
-          lastChecked: new Date()
-        };
-      } catch {
-        return {
-          service,
-          status: "unhealthy" as const,
-          lastChecked: new Date()
-        };
-      }
-    });
-    
-    const results = await Promise.all(promises);
-    
-    // Update health status
-    results.forEach(({ service, status, lastChecked }) => {
-      newHealth[service] = { status, lastChecked };
-    });
-    
-    setServiceHealth(newHealth);
-  };
+  useEffect(() => {
+    if (user) loadData();
+  }, [user, loadData]);
 
-  const saveConfig = async () => {
-    if (!config) return;
-    
+  const handleSaveSection = async (section: string, data: Record<string, unknown>) => {
     setSaving(true);
-    setError("");
-    setSaved(false);
-    
+    setSaveMessage(null);
     try {
-      const updatedConfig = await configAPI.updateConfig(config);
-      setConfig(updatedConfig);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      await configAPI.updateConfigSection(section, data);
+      setSaveMessage("Configuration saved successfully");
+      await loadData();
     } catch (err) {
-      console.error("Failed to save config:", err);
-      setError(err instanceof configAPI.ConfigAPIError ? err.message : "Failed to save configuration");
+      setSaveMessage(err instanceof Error ? err.message : "Failed to save configuration");
     } finally {
       setSaving(false);
+      setTimeout(() => setSaveMessage(null), 3000);
     }
   };
 
-  const updateConfig = (path: string[], value: any) => {
-    if (!config) return;
-    
-    const updated = { ...config };
-    let current: any = updated;
-    
-    for (let i = 0; i < path.length - 1; i++) {
-      current[path[i]] = { ...current[path[i]] };
-      current = current[path[i]];
+  const handleAddCredential = async () => {
+    if (!newCred.provider_name || !newCred.credential_key || !newCred.value) return;
+    setAddingCred(true);
+    try {
+      await configAPI.addCredential(newCred);
+      setNewCred({ provider_name: "", credential_key: "", value: "", label: "" });
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to add credential");
+    } finally {
+      setAddingCred(false);
     }
-    
-    current[path[path.length - 1]] = value;
-    setConfig(updated);
-    setHasUnsavedChanges(true);
-    setLastUpdated(new Date());
+  };
+
+  const handleDeleteCredential = async (id: string) => {
+    if (!confirm("Delete this credential?")) return;
+    try {
+      await configAPI.deleteCredential(id);
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete credential");
+    }
+  };
+
+  const handleToggleCredential = async (cred: configAPI.Credential) => {
+    try {
+      await configAPI.updateCredential(cred.id, { is_active: !cred.is_active });
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update credential");
+    }
   };
 
   const toggleSection = (section: string) => {
-    const newExpanded = new Set(expandedSections);
-    if (newExpanded.has(section)) {
-      newExpanded.delete(section);
-    } else {
-      newExpanded.add(section);
-    }
-    setExpandedSections(newExpanded);
+    setExpandedSection(expandedSection === section ? null : section);
   };
 
-  const downloadEnvFile = async () => {
-    try {
-      const { content } = await configAPI.generateEnvFile();
-      const blob = new Blob([content], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = ".env.local";
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      setError(err instanceof configAPI.ConfigAPIError ? err.message : "Failed to generate .env file");
-    }
-  };
-
-  // ── Credential Vault Functions ────────────────────────────────────────
-  const loadCredentials = async () => {
-    setLoadingCredentials(true);
-    try {
-      const creds = await configAPI.getCredentials();
-      setCredentials(creds);
-    } catch (err) {
-      console.error("Failed to load credentials:", err);
-    } finally {
-      setLoadingCredentials(false);
-    }
-  };
-
-  const saveCredential = async () => {
-    if (!newCredProvider || !newCredKey || !newCredValue) {
-      setError("Provider, key name, and value are required");
-      return;
-    }
-    try {
-      await configAPI.storeCredential({
-        provider_name: newCredProvider,
-        credential_key: newCredKey,
-        value: newCredValue,
-        credential_type: newCredType,
-        label: newCredLabel || undefined,
-      });
-      setNewCredProvider("");
-      setNewCredKey("");
-      setNewCredValue("");
-      setNewCredLabel("");
-      setNewCredType("api_key");
-      await loadCredentials();
-    } catch (err) {
-      setError(err instanceof configAPI.ConfigAPIError ? err.message : "Failed to store credential");
-    }
-  };
-
-  const removeCredential = async (id: number) => {
-    try {
-      await configAPI.deleteCredential(id);
-      await loadCredentials();
-    } catch (err) {
-      setError(err instanceof configAPI.ConfigAPIError ? err.message : "Failed to delete credential");
-    }
-  };
-
-  const verifyCredentialAction = async (id: number) => {
-    try {
-      const result = await configAPI.verifyCredential(id);
-      if (result.status === "ok") {
-        setError("");
-        alert(`✓ Credential verified (${result.preview}, ${result.length} chars)`);
-      } else {
-        setError(`Verification failed: ${result.message}`);
-      }
-    } catch (err) {
-      setError("Verification failed");
-    }
-  };
-
-  // ── Data Ingestion Functions ──────────────────────────────────────────
-  const loadDataSources = async () => {
-    setLoadingDataSources(true);
-    try {
-      const [sources, limits] = await Promise.all([
-        configAPI.getIngestionSources().catch(() => []),
-        configAPI.getRateLimits().catch(() => ({})),
-      ]);
-      setDataSources(sources);
-      setRateLimits(limits);
-    } catch (err) {
-      console.error("Failed to load data sources:", err);
-    } finally {
-      setLoadingDataSources(false);
-    }
-  };
-
-  const testAllFree = async () => {
-    setTestingAll(true);
-    try {
-      const result = await configAPI.testAllFreeSources();
-      setTestResults(result.results);
-    } catch (err) {
-      setError("Failed to test free sources");
-    } finally {
-      setTestingAll(false);
-    }
-  };
-
-  const testSingleSource = async (source: string) => {
-    try {
-      const result = await configAPI.testDataSource(source);
-      setTestResults(prev => ({ ...prev, [source]: result }));
-    } catch (err) {
-      setTestResults(prev => ({ ...prev, [source]: { ok: false, message: String(err) } }));
-    }
-  };
-
-  const toggleDataSource = async (sourceName: string) => {
-    try {
-      const result = await configAPI.toggleSource(sourceName);
-      await loadDataSources();
-    } catch (err) {
-      setError("Failed to toggle source");
-    }
-  };
-
-  const updateSourceRateLimit = async (source: string, maxReq: number, period: number) => {
-    try {
-      await configAPI.updateRateLimit(source, maxReq, period);
-      await loadDataSources();
-    } catch (err) {
-      setError("Failed to update rate limit");
-    }
-  };
-
-  // Provider Management Functions
-  const addCustomProvider = () => {
-    if (!newProvider.name || !newProvider.displayName) {
-      setError("Provider name and display name are required");
-      return;
-    }
-    
-    // Add the new provider with dynamic fields
-    const providerConfig = {
-      name: newProvider.name,
-      displayName: newProvider.displayName,
-      fields: newProvider.fields
-    };
-    
-    updateConfig(["llm", "providers", newProvider.name], providerConfig);
-    
-    // Reset form
-    setNewProvider({
-      name: "",
-      displayName: "",
-      fields: {}
-    });
-    setShowAddProvider(false);
-  };
-  
-  const removeProvider = (providerName: string) => {
-    // If this provider is active, switch to mock
-    if (config?.llm.provider === providerName) {
-      updateConfig(["llm", "provider"], "mock");
-    }
-    
-    // Remove the provider
-    const updatedProviders = { ...config?.llm.providers };
-    delete updatedProviders[providerName];
-    updateConfig(["llm", "providers"], updatedProviders);
-  };
-  
-  const addCustomField = (providerName: string) => {
-    const fieldName = prompt("Enter field name (e.g., 'apiKey', 'model', 'temperature'):");
-    if (!fieldName) return;
-    
-    const fieldValue = prompt(`Enter value for ${fieldName}:`);
-    if (fieldValue === null) return;
-    
-    updateConfig(["llm", "providers", providerName, "fields", fieldName], fieldValue);
-  };
-  
-  const removeCustomField = (providerName: string, fieldName: string) => {
-    const updatedFields = { ...config?.llm.providers[providerName].fields };
-    delete updatedFields[fieldName];
-    updateConfig(["llm", "providers", providerName, "fields"], updatedFields);
-  };
-  
-  const addFieldToNewProvider = () => {
-    const fieldName = prompt("Enter field name (e.g., 'apiKey', 'model', 'temperature'):");
-    if (!fieldName) return;
-    
-    const fieldValue = prompt(`Enter value for ${fieldName}:`);
-    if (fieldValue === null) return;
-    
-    setNewProvider(prev => ({
-      ...prev,
-      fields: { ...prev.fields, [fieldName]: fieldValue }
-    }));
-  };
-
-  if (loading || !config) {
+  if (!user) {
     return (
-      <PortalShell title="Backend Config">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-400" />
-        </div>
+      <PortalShell title="Config">
+        <div className="text-center py-20 text-white/40">Please sign in to access configuration.</div>
       </PortalShell>
     );
   }
 
   return (
-    <PortalShell title="Backend Config">
-      <div className="space-y-6">
-        
-        {/* Enhanced Header with Dynamic Controls */}
-        <div className="space-y-4">
-          {/* Title and Controls */}
+    <PortalShell
+      title="Config"
+      action={
+        <button
+          onClick={loadData}
+          disabled={loading}
+          className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm transition-colors flex items-center gap-2"
+        >
+          <svg className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Refresh
+        </button>
+      }
+    >
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Service Status */}
+        <div className="bg-white/[0.03] border border-white/5 rounded-xl p-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-white">Backend Configuration</h1>
-                <p className="text-white/50 text-sm">Manage database connections, API keys, and service settings</p>
-              </div>
-              {lastUpdated && (
-                <div className="text-xs text-white/30">
-                  Last updated: {lastUpdated.toLocaleTimeString()}
-                </div>
-              )}
+            <div>
+              <h2 className="text-lg font-semibold">Config Service</h2>
+              <p className="text-sm text-white/40 mt-0.5">Backend configuration management</p>
             </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => checkServiceHealth()}
-                disabled={Object.values(serviceHealth).some(s => s.status === "checking")}
-                className="px-3 py-1.5 text-xs font-mono bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 rounded transition-colors disabled:opacity-50"
-              >
-                {Object.values(serviceHealth).some(s => s.status === "checking") ? "Checking..." : "🔄 Check Health"}
-              </button>
-              <button
-                onClick={downloadEnvFile}
-                className="px-3 py-1.5 text-xs font-mono bg-blue-600/70 hover:bg-blue-600 text-white border border-blue-500/30 rounded transition-colors"
-              >
-                📁 Export .env
-              </button>
-              <button
-                onClick={saveConfig}
-                disabled={saving || !hasUnsavedChanges}
-                className={`px-4 py-2 text-sm font-medium rounded transition-colors ${
-                  saved ? 'bg-emerald-600 text-white' :
-                  hasUnsavedChanges ? 'bg-amber-600/70 hover:bg-amber-600 text-white' :
-                  'bg-emerald-600/70 hover:bg-emerald-600 text-white disabled:opacity-50'
-                }`}
-              >
-                {saving ? "💾 Saving..." : saved ? "✅ Saved" : hasUnsavedChanges ? "💾 Save Changes" : "💾 Save Config"}
-              </button>
-            </div>
-          </div>
-
-          {/* Live Settings Bar */}
-          <div className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded-lg">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="autoRefresh"
-                  checked={autoRefreshEnabled}
-                  onChange={(e) => setAutoRefreshEnabled(e.target.checked)}
-                  className="rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500 focus:ring-opacity-50"
-                />
-                <label htmlFor="autoRefresh" className="text-sm text-white/70">🔄 Auto-refresh health (10s)</label>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="autoSave"
-                  checked={autoSaveEnabled}
-                  onChange={(e) => setAutoSaveEnabled(e.target.checked)}
-                  className="rounded border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500 focus:ring-opacity-50"
-                />
-                <label htmlFor="autoSave" className="text-sm text-white/70">💾 Auto-save (2s delay)</label>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 text-xs text-white/50">
-              {hasUnsavedChanges && <span className="text-amber-400">● Unsaved changes</span>}
-              <span>Services: {Object.values(serviceHealth).filter(s => s.status === "healthy").length}/8 online</span>
-            </div>
+            {health ? (
+              <StatusBadge status={health.status} />
+            ) : (
+              <StatusBadge status="error" />
+            )}
           </div>
         </div>
 
-        {/* Enhanced Service Health Dashboard */}
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            🏥 Service Health Dashboard
-            <span className="text-sm font-normal text-white/50">
-              ({Object.values(serviceHealth).filter(s => s.status === "healthy").length} of 8 healthy)
-            </span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4 bg-white/[0.02] border border-white/5 rounded-lg">
-            {Object.entries(serviceHealth).map(([service, healthData]) => (
-              <ServiceHealthIndicator 
-                key={service} 
-                service={service} 
-                status={healthData.status} 
-                lastChecked={healthData.lastChecked}
-                onRefresh={() => checkServiceHealth(service)}
-              />
-            ))}
-          </div>
-        </div>
-
+        {/* Error Message */}
         {error && (
-          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded text-red-400 text-sm">
+          <div className="bg-red-400/10 border border-red-400/20 rounded-xl p-4 text-red-400">
             {error}
           </div>
         )}
 
-        {/* Configuration Sections */}
-        <div className="space-y-4">
-          
-          {/* Database Configuration */}
-          <ConfigSection
-            title="Database"
-            description="PostgreSQL and Redis connection settings"
-            expanded={expandedSections.has("database")}
-            onToggle={() => toggleSection("database")}
-          >
-            <div className="grid md:grid-cols-2 gap-6 mt-4">
-              <div className="space-y-4">
-                <h4 className="text-white/90 font-medium">PostgreSQL</h4>
-                <ConfigField
-                  label="Host"
-                  value={config.database.postgresql.host}
-                  onChange={(value) => updateConfig(["database", "postgresql", "host"], value)}
-                  placeholder="localhost"
-                />
-                <ConfigField
-                  label="Port"
-                  value={String(config.database.postgresql.port)}
-                  onChange={(value) => updateConfig(["database", "postgresql", "port"], parseInt(value) || 5432)}
-                  type="number"
-                />
-                <ConfigField
-                  label="Database"
-                  value={config.database.postgresql.database}
-                  onChange={(value) => updateConfig(["database", "postgresql", "database"], value)}
-                  placeholder="trading_os"
-                />
-                <ConfigField
-                  label="Username"
-                  value={config.database.postgresql.username}
-                  onChange={(value) => updateConfig(["database", "postgresql", "username"], value)}
-                  placeholder="trading_os"
-                />
-                <ConfigField
-                  label="Password"
-                  value={config.database.postgresql.password}
-                  onChange={(value) => updateConfig(["database", "postgresql", "password"], value)}
-                  sensitive
-                />
-              </div>
-              
-              <div className="space-y-4">
-                <h4 className="text-white/90 font-medium">Redis</h4>
-                <ConfigField
-                  label="Host"
-                  value={config.database.redis.host}
-                  onChange={(value) => updateConfig(["database", "redis", "host"], value)}
-                  placeholder="localhost"
-                />
-                <ConfigField
-                  label="Port"
-                  value={String(config.database.redis.port)}
-                  onChange={(value) => updateConfig(["database", "redis", "port"], parseInt(value) || 6379)}
-                  type="number"
-                />
-                <ConfigField
-                  label="Password"
-                  value={config.database.redis.password || ""}
-                  onChange={(value) => updateConfig(["database", "redis", "password"], value)}
-                  sensitive
-                  description="Optional for local development"
-                />
-              </div>
-            </div>
-          </ConfigSection>
+        {/* Save Message */}
+        {saveMessage && (
+          <div className={`rounded-xl p-4 ${
+            saveMessage.includes("success") 
+              ? "bg-emerald-400/10 border border-emerald-400/20 text-emerald-400"
+              : "bg-red-400/10 border border-red-400/20 text-red-400"
+          }`}>
+            {saveMessage}
+          </div>
+        )}
 
-          {/* Exchange Configuration */}
-          <ConfigSection
-            title="Exchange & Trading"
-            description="Trading venue settings and API credentials"
-            expanded={expandedSections.has("exchanges")}
-            onToggle={() => toggleSection("exchanges")}
-          >
-            <div className="space-y-6 mt-4">
-              {/* Trading Mode & Quick Setup */}
-              <div className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded">
-                <div className="flex items-center gap-6">
-                  <label className="flex items-center gap-2 text-sm text-white/70">
-                    <input
-                      type="checkbox"
-                      checked={config.exchanges.paperMode}
-                      onChange={(e) => updateConfig(["exchanges", "paperMode"], e.target.checked)}
-                      className="rounded border-white/20 bg-white/5 text-emerald-600"
-                    />
-                    📈 Paper Trading Mode
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm text-white/70">Active Exchange:</label>
-                    <select
-                      value={config.exchanges.activeExchange}
-                      onChange={(e) => updateConfig(["exchanges", "activeExchange"], e.target.value)}
-                      className="bg-white/5 border border-white/10 rounded px-3 py-1 text-sm text-white/90"
-                    >
-                      <option value="paper">Paper (Simulation)</option>
-                      <option value="binance">Binance</option>
-                      <option value="kraken">Kraken</option>
-                      <option value="coinbase">Coinbase</option>
-                      <option value="alpaca">Alpaca</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      // Quick setup for paper trading
-                      updateConfig(["exchanges", "paperMode"], true);
-                      updateConfig(["exchanges", "activeExchange"], "paper");
-                    }}
-                    className="px-3 py-1 text-xs bg-green-600/20 hover:bg-green-600/30 text-green-300 border border-green-500/20 rounded transition-colors"
-                  >
-                    🎯 Quick Paper Setup
-                  </button>
-                  <button
-                    onClick={() => {
-                      // Quick setup for live trading (requires keys)
-                      updateConfig(["exchanges", "paperMode"], false);
-                    }}
-                    className="px-3 py-1 text-xs bg-orange-600/20 hover:bg-orange-600/30 text-orange-300 border border-orange-500/20 rounded transition-colors"
-                  >
-                    ⚡ Live Trading
-                  </button>
-                </div>
-              </div>
-              
-              {/* Exchange Credentials with Status */}
-              {Object.entries(config.exchanges.credentials).map(([exchange, creds]) => {
-                const hasCredentials = creds.apiKey && creds.apiSecret;
-                const isActive = config.exchanges.activeExchange === exchange;
-                
-                return (
-                  <div key={exchange} className={`p-4 border rounded transition-colors ${
-                    isActive ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/10 bg-white/[0.02]'
-                  }`}>
-                    <div className="flex items-center justify-between mb-3">
-                      <h5 className="text-white/90 font-medium capitalize flex items-center gap-2">
-                        {exchange}
-                        {isActive && <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">• ACTIVE</span>}
-                        {hasCredentials && <span className="text-xs text-green-400">✓</span>}
-                      </h5>
-                      <div className="flex gap-2">
-                        {hasCredentials && (
-                          <button
-                            onClick={() => {
-                              // Test connection for this exchange
-                              console.log(`Testing ${exchange} connection...`);
-                            }}
-                            className="text-xs text-blue-400 hover:text-blue-300"
-                          >
-                            🔄 Test
-                          </button>
-                        )}
-                        <button
-                          onClick={() => {
-                            // Clear credentials
-                            updateConfig(["exchanges", "credentials", exchange, "apiKey"], "");
-                            updateConfig(["exchanges", "credentials", exchange, "apiSecret"], "");
-                          }}
-                          className="text-xs text-red-400 hover:text-red-300"
-                        >
-                          🗑️ Clear
-                        </button>
-                      </div>
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <ConfigField
-                        label="API Key"
-                        value={creds.apiKey}
-                        onChange={(value) => updateConfig(["exchanges", "credentials", exchange, "apiKey"], value)}
-                        sensitive
-                      />
-                      <ConfigField
-                        label="API Secret"
-                        value={creds.apiSecret}
-                        onChange={(value) => updateConfig(["exchanges", "credentials", exchange, "apiSecret"], value)}
-                        sensitive
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </ConfigSection>
-
-          {/* LLM Providers with Dynamic Management */}
-          <ConfigSection
-            title="LLM Providers"
-            description="AI model settings for orchestrator agents"
-            expanded={expandedSections.has("llm")}
-            onToggle={() => toggleSection("llm")}
-          >
-            <div className="space-y-6 mt-4">
-              {/* Active Provider Selection */}
-              <div className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded">
-                <div className="flex items-center gap-4">
-                  <label className="text-sm text-white/70">Active Provider:</label>
-                  <select
-                    value={config.llm.provider}
-                    onChange={(e) => updateConfig(["llm", "provider"], e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white/90"
-                  >
-                    {Object.entries(config.llm.providers).map(([key, provider]) => (
-                      <option key={key} value={key}>{provider.displayName}</option>
-                    ))}
-                  </select>
-                </div>
-                <button
-                  onClick={() => setShowAddProvider(true)}
-                  className="px-3 py-1.5 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/20 rounded transition-colors"
-                >
-                  + Add Provider
-                </button>
-              </div>
-
-              {/* Quick Setup Templates */}
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => {
-                    const providerName = prompt("Enter provider name (e.g., 'ollama', 'localai'):");
-                    if (!providerName) return;
-                    const displayName = prompt("Enter display name:") || providerName;
-                    
-                    updateConfig(["llm", "providers", providerName.toLowerCase()], {
-                      name: providerName.toLowerCase(),
-                      displayName: displayName,
-                      fields: {
-                        baseUrl: "http://localhost:11434",
-                        model: "llama2"
-                      }
-                    });
-                  }}
-                  className="px-2 py-1 text-xs bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/20 rounded transition-colors"
-                >
-                  🏠 Local LLM
-                </button>
-                <button
-                  onClick={() => {
-                    const providerName = prompt("Enter provider name (e.g., 'huggingface', 'replicate'):");
-                    if (!providerName) return;
-                    const displayName = prompt("Enter display name:") || providerName;
-                    
-                    updateConfig(["llm", "providers", providerName.toLowerCase()], {
-                      name: providerName.toLowerCase(),
-                      displayName: displayName,
-                      fields: {
-                        apiKey: "",
-                        baseUrl: "",
-                        model: ""
-                      }
-                    });
-                  }}
-                  className="px-2 py-1 text-xs bg-orange-600/20 hover:bg-orange-600/30 text-orange-300 border border-orange-500/20 rounded transition-colors"
-                >
-                  🌐 API Provider
-                </button>
-                <button
-                  onClick={() => {
-                    const providerName = prompt("Enter provider name (e.g., 'azure_openai'):");
-                    if (!providerName) return;
-                    const displayName = prompt("Enter display name:") || providerName;
-                    
-                    updateConfig(["llm", "providers", providerName.toLowerCase()], {
-                      name: providerName.toLowerCase(),
-                      displayName: displayName,
-                      fields: {
-                        apiKey: "",
-                        endpoint: "",
-                        apiVersion: "2023-05-15",
-                        deployment: ""
-                      }
-                    });
-                  }}
-                  className="px-2 py-1 text-xs bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/20 rounded transition-colors"
-                >
-                  ☁️ Azure OpenAI
-                </button>
-              </div>
-
-              {/* Add Provider Modal/Form */}
-              {showAddProvider && (
-                <div className="p-4 bg-white/[0.03] border border-white/10 rounded">
-                  <h4 className="text-white/90 font-medium mb-4 flex items-center gap-2">
-                    🆕 Add Custom Provider
-                  </h4>
-                  <div className="grid md:grid-cols-2 gap-4 mb-4">
-                    <ConfigField
-                      label="Provider Name"
-                      value={newProvider.name}
-                      onChange={(value) => setNewProvider(prev => ({ ...prev, name: value.toLowerCase().replace(/\s+/g, '_') }))}
-                      placeholder="e.g. custom_llm"
-                      description="Internal identifier (lowercase, no spaces)"
-                    />
-                    <ConfigField
-                      label="Display Name"
-                      value={newProvider.displayName}
-                      onChange={(value) => setNewProvider(prev => ({ ...prev, displayName: value }))}
-                      placeholder="e.g. Custom LLM Service"
-                    />
-                  </div>
-                  
-                  {/* Dynamic Fields */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h5 className="text-white/80 text-sm font-medium">Custom Fields ({Object.keys(newProvider.fields).length})</h5>
-                      <button
-                        onClick={addFieldToNewProvider}
-                        className="px-3 py-1 text-xs bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/20 rounded transition-colors"
-                      >
-                        + Add Field
-                      </button>
-                    </div>
-                    
-                    {Object.entries(newProvider.fields).map(([fieldName, fieldValue]) => (
-                      <div key={fieldName} className="flex items-end gap-2">
-                        <div className="flex-1">
-                          <ConfigField
-                            label={fieldName}
-                            value={fieldValue}
-                            onChange={(value) => setNewProvider(prev => ({
-                              ...prev,
-                              fields: { ...prev.fields, [fieldName]: value }
-                            }))}
-                            sensitive={fieldName.toLowerCase().includes('key') || fieldName.toLowerCase().includes('secret')}
-                          />
-                        </div>
-                        <button
-                          onClick={() => {
-                            const updatedFields = { ...newProvider.fields };
-                            delete updatedFields[fieldName];
-                            setNewProvider(prev => ({ ...prev, fields: updatedFields }));
-                          }}
-                          className="mb-2 px-2 py-1 text-xs text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded transition-colors"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="flex gap-2 mt-6">
-                    <button
-                      onClick={addCustomProvider}
-                      className="px-4 py-2 bg-emerald-600/70 hover:bg-emerald-600 text-white text-sm rounded transition-colors"
-                    >
-                      ✅ Add Provider
-                    </button>
-                    <button
-                      onClick={() => setShowAddProvider(false)}
-                      className="px-4 py-2 bg-gray-600/70 hover:bg-gray-600 text-white text-sm rounded transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Existing Providers */}
-              <div className="space-y-4">
-                <h4 className="text-white/90 font-medium flex items-center gap-2">
-                  🤖 Configured Providers ({Object.keys(config.llm.providers).length})
-                </h4>
-                
-                {Object.entries(config.llm.providers).map(([providerKey, provider]) => {
-                  const isActive = config.llm.provider === providerKey;
-                  const isOriginalBuiltIn = ["mock", "anthropic", "openai"].includes(providerKey);
-                  const isEditing = editingProvider === providerKey;
-                  
-                  return (
-                    <div key={providerKey} className={`p-4 border rounded transition-colors ${
-                      isActive ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/10 bg-white/[0.02]'
-                    }`}>
-                      <div className="flex items-center justify-between mb-3">
-                        <h5 className="text-white/90 font-medium flex items-center gap-2">
-                          {provider.displayName}
-                          {isActive && <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">• ACTIVE</span>}
-                          {isOriginalBuiltIn && <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded">🔒 Built-in</span>}
-                        </h5>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => setEditingProvider(isEditing ? null : providerKey)}
-                            className="text-xs text-blue-400 hover:text-blue-300"
-                          >
-                            {isEditing ? '✕ Close' : '✏️ Edit'}
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (isOriginalBuiltIn && providerKey === 'mock') {
-                                setError("Cannot remove the Mock provider - it's needed as a fallback");
-                                return;
-                              }
-                              if (confirm(`Are you sure you want to remove ${provider.displayName}? This action cannot be undone.`)) {
-                                removeProvider(providerKey);
-                              }
-                            }}
-                            className="text-xs text-red-400 hover:text-red-300"
-                          >
-                            🗑️ Remove
-                          </button>
-                        </div>
-                      </div>
-                      
-                      {isEditing && (
-                        <div className="mt-4">
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <h6 className="text-white/80 text-sm font-medium">Fields ({Object.keys(provider.fields).length})</h6>
-                              <button
-                                onClick={() => addCustomField(providerKey)}
-                                className="px-3 py-1 text-xs bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/20 rounded transition-colors"
-                              >
-                                + Add Field
-                              </button>
-                            </div>
-                            
-                            {Object.entries(provider.fields).map(([fieldName, fieldValue]) => (
-                              <div key={fieldName} className="flex items-end gap-2">
-                                <div className="flex-1">
-                                  <ConfigField
-                                    label={fieldName}
-                                    value={fieldValue}
-                                    onChange={(value) => updateConfig(["llm", "providers", providerKey, "fields", fieldName], value)}
-                                    sensitive={fieldName.toLowerCase().includes('key') || fieldName.toLowerCase().includes('secret')}
-                                  />
-                                </div>
-                                <button
-                                  onClick={() => removeCustomField(providerKey, fieldName)}
-                                  className="mb-2 px-2 py-1 text-xs text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded transition-colors"
-                                >
-                                  🗑️
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {!isEditing && (
-                        <div className="text-sm text-white/50">
-                          {Object.keys(provider.fields).length > 0 ? (
-                            <span>Fields: {Object.keys(provider.fields).join(', ')}</span>
-                          ) : (
-                            <span>No fields configured</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </ConfigSection>
-
-          {/* Service Configuration */}
-          <ConfigSection
-            title="Service Settings"
-            description="Execution backend and service ports"
-            expanded={expandedSections.has("service")}
-            onToggle={() => toggleSection("service")}
-          >
-            <div className="space-y-6 mt-4">
-              <div className="grid md:grid-cols-2 gap-6">
+        {loading ? (
+          <div className="text-center py-12 text-white/40">Loading configuration...</div>
+        ) : config ? (
+          <div className="space-y-4">
+            {/* Database Config */}
+            <ConfigSection
+              title="🗄️ Database"
+              expanded={expandedSection === "database"}
+              onToggle={() => toggleSection("database")}
+            >
+              <div className="pt-4 space-y-6">
                 <div>
-                  <label className="block text-sm text-white/70 mb-2">Execution Queue Backend</label>
-                  <select
-                    value={config.service.executionQueueBackend}
-                    onChange={(e) => updateConfig(["service", "executionQueueBackend"], e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white/90 w-full"
-                  >
-                    <option value="memory">In-Memory (Single Container)</option>
-                    <option value="redis">Redis (Multi-Container)</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm text-white/70 mb-2">Environment</label>
-                  <select
-                    value={config.service.environment}
-                    onChange={(e) => updateConfig(["service", "environment"], e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white/90 w-full"
-                  >
-                    <option value="development">Development</option>
-                    <option value="production">Production</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="text-white/90 font-medium mb-3">Service Ports</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {Object.entries(config.service.ports).map(([service, port]) => (
+                  <h4 className="text-sm font-medium text-white/60 mb-3">PostgreSQL</h4>
+                  <div className="grid grid-cols-2 gap-4">
                     <ConfigField
-                      key={service}
-                      label={service}
-                      value={String(port)}
-                      onChange={(value) => updateConfig(["service", "ports", service], parseInt(value) || port)}
+                      label="Host"
+                      value={config.database.postgresql.host}
+                      onChange={() => {}}
+                      disabled
+                    />
+                    <ConfigField
+                      label="Port"
+                      value={String(config.database.postgresql.port)}
+                      onChange={() => {}}
                       type="number"
+                      disabled
                     />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </ConfigSection>
-
-          {/* Pricing Configuration */}
-          <ConfigSection
-            title="Pricing Data"
-            description="Live price feed and data source settings"
-            expanded={expandedSections.has("pricing")}
-            onToggle={() => toggleSection("pricing")}
-          >
-            <div className="space-y-4 mt-4">
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm text-white/70 mb-2">Provider</label>
-                  <select
-                    value={config.pricing.provider}
-                    onChange={(e) => updateConfig(["pricing", "provider"], e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white/90 w-full"
-                  >
-                    <option value="coingecko">CoinGecko (Free)</option>
-                    <option value="binance">Binance API</option>
-                    <option value="custom">Custom Endpoint</option>
-                  </select>
-                </div>
-                
-                <ConfigField
-                  label="Update Interval (seconds)"
-                  value={String(config.pricing.updateInterval)}
-                  onChange={(value) => updateConfig(["pricing", "updateInterval"], parseInt(value) || 300)}
-                  type="number"
-                />
-                
-                <ConfigField
-                  label="Cache TTL (seconds)"
-                  value={String(config.pricing.cacheTtl)}
-                  onChange={(value) => updateConfig(["pricing", "cacheTtl"], parseInt(value) || 300)}
-                  type="number"
-                />
-              </div>
-              
-              {config.pricing.provider !== "coingecko" && (
-                <ConfigField
-                  label="API Key"
-                  value={config.pricing.apiKey || ""}
-                  onChange={(value) => updateConfig(["pricing", "apiKey"], value)}
-                  sensitive
-                  description="Required for non-free data providers"
-                />
-              )}
-            </div>
-          </ConfigSection>
-
-          {/* ─── API Credential Vault ──────────────────────────────────────── */}
-          <ConfigSection
-            title="🔐 API Credential Vault"
-            description="Encrypted storage for API keys and secrets (AES-256)"
-            expanded={expandedSections.has("credentials")}
-            onToggle={() => toggleSection("credentials")}
-          >
-            <div className="space-y-6 mt-4">
-              {/* Stored Credentials */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-white/90 font-medium">Stored Credentials ({credentials.length})</h4>
-                  <button
-                    onClick={loadCredentials}
-                    disabled={loadingCredentials}
-                    className="text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50"
-                  >
-                    {loadingCredentials ? "Loading..." : "🔄 Refresh"}
-                  </button>
-                </div>
-
-                {credentials.length === 0 ? (
-                  <div className="text-sm text-white/40 p-4 bg-white/[0.02] border border-white/5 rounded text-center">
-                    No credentials stored yet. Add one below.
+                    <ConfigField
+                      label="Database"
+                      value={config.database.postgresql.database}
+                      onChange={() => {}}
+                      disabled
+                    />
+                    <ConfigField
+                      label="Username"
+                      value={config.database.postgresql.username}
+                      onChange={() => {}}
+                      disabled
+                    />
                   </div>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-white/60 mb-3">Redis</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <ConfigField
+                      label="Host"
+                      value={config.database.redis.host}
+                      onChange={() => {}}
+                      disabled
+                    />
+                    <ConfigField
+                      label="Port"
+                      value={String(config.database.redis.port)}
+                      onChange={() => {}}
+                      type="number"
+                      disabled
+                    />
+                  </div>
+                </div>
+              </div>
+            </ConfigSection>
+
+            {/* Exchange Config */}
+            <ConfigSection
+              title="💱 Exchanges"
+              expanded={expandedSection === "exchanges"}
+              onToggle={() => toggleSection("exchanges")}
+            >
+              <div className="pt-4 space-y-4">
+                <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg">
+                  <span className="text-white/60">Active Exchange</span>
+                  <span className="font-medium">{config.exchanges.activeExchange}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg">
+                  <span className="text-white/60">Paper Mode</span>
+                  <span className={`font-medium ${config.exchanges.paperMode ? "text-yellow-400" : "text-emerald-400"}`}>
+                    {config.exchanges.paperMode ? "Enabled (Simulation)" : "Disabled (Live)"}
+                  </span>
+                </div>
+              </div>
+            </ConfigSection>
+
+            {/* Service Config */}
+            <ConfigSection
+              title="⚙️ Services"
+              expanded={expandedSection === "service"}
+              onToggle={() => toggleSection("service")}
+            >
+              <div className="pt-4 space-y-4">
+                <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg">
+                  <span className="text-white/60">Environment</span>
+                  <span className={`font-medium ${
+                    config.service.environment === "production" ? "text-red-400" : "text-emerald-400"
+                  }`}>
+                    {config.service.environment}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg">
+                  <span className="text-white/60">Execution Queue Backend</span>
+                  <span className="font-medium">{config.service.executionQueueBackend}</span>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-white/60 mb-3">Service Ports</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {Object.entries(config.service.ports).map(([service, port]) => (
+                      <div key={service} className="p-2 bg-white/[0.02] rounded text-sm">
+                        <span className="text-white/40">{service}:</span>{" "}
+                        <span className="font-mono">{port}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </ConfigSection>
+
+            {/* LLM Config */}
+            <ConfigSection
+              title="🤖 LLM Providers"
+              expanded={expandedSection === "llm"}
+              onToggle={() => toggleSection("llm")}
+            >
+              <div className="pt-4 space-y-4">
+                <div className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg">
+                  <span className="text-white/60">Active Provider</span>
+                  <span className="font-medium">{config.llm.provider}</span>
+                </div>
+                {Object.entries(config.llm.providers).map(([key, provider]) => (
+                  <div key={key} className="p-3 bg-white/[0.02] rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium">{provider.displayName}</span>
+                      {config.llm.provider === key && (
+                        <span className="px-2 py-0.5 bg-emerald-400/10 text-emerald-400 rounded text-xs">Active</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ConfigSection>
+
+            {/* Credentials */}
+            <ConfigSection
+              title="🔐 Credentials"
+              expanded={expandedSection === "credentials"}
+              onToggle={() => toggleSection("credentials")}
+            >
+              <div className="pt-4 space-y-4">
+                {credentials.length === 0 ? (
+                  <p className="text-white/40 text-sm">No credentials configured.</p>
                 ) : (
                   <div className="space-y-2">
                     {credentials.map((cred) => (
-                      <div
+                      <CredentialRow
                         key={cred.id}
-                        className={`p-3 border rounded flex items-center justify-between ${
-                          cred.is_active
-                            ? "border-white/10 bg-white/[0.02]"
-                            : "border-yellow-500/20 bg-yellow-500/5 opacity-60"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className={`w-2 h-2 rounded-full ${cred.is_set ? "bg-emerald-500" : "bg-red-500"}`} />
-                          <div>
-                            <div className="text-sm text-white/90 font-medium">
-                              {cred.provider_name} / {cred.credential_key}
-                            </div>
-                            <div className="text-xs text-white/40">
-                              {cred.label || cred.credential_type}
-                              {cred.last_verified_at && ` • Verified ${new Date(cred.last_verified_at).toLocaleDateString()}`}
-                              {!cred.is_active && " • DISABLED"}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => verifyCredentialAction(cred.id)}
-                            className="text-xs text-blue-400 hover:text-blue-300"
-                          >
-                            ✓ Verify
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (confirm(`Delete credential for ${cred.provider_name}/${cred.credential_key}?`)) {
-                                removeCredential(cred.id);
-                              }
-                            }}
-                            className="text-xs text-red-400 hover:text-red-300"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </div>
+                        credential={cred}
+                        onDelete={() => handleDeleteCredential(cred.id)}
+                        onToggle={() => handleToggleCredential(cred)}
+                      />
                     ))}
                   </div>
                 )}
-              </div>
 
-              {/* Add New Credential */}
-              <div className="p-4 bg-white/[0.03] border border-white/10 rounded">
-                <h4 className="text-white/90 font-medium mb-4">➕ Add API Credential</h4>
-                <div className="grid md:grid-cols-2 gap-4 mb-4">
-                  <div className="space-y-2">
-                    <label className="block text-sm text-white/70">Provider</label>
-                    <select
-                      value={newCredProvider}
-                      onChange={(e) => setNewCredProvider(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white/90"
-                    >
-                      <option value="">Select provider...</option>
-                      <option value="binance">Binance</option>
-                      <option value="binance_public">Binance (Public)</option>
-                      <option value="kraken">Kraken</option>
-                      <option value="kraken_public">Kraken (Public)</option>
-                      <option value="coinbase">Coinbase</option>
-                      <option value="coingecko">CoinGecko</option>
-                      <option value="alpha_vantage">Alpha Vantage</option>
-                      <option value="alpaca">Alpaca</option>
-                      <option value="yahoo_finance">Yahoo Finance</option>
-                      <option value="custom">Custom</option>
-                    </select>
+                {/* Add Credential Form */}
+                <div className="border-t border-white/5 pt-4 mt-4">
+                  <h4 className="text-sm font-medium text-white/60 mb-3">Add New Credential</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <ConfigField
+                      label="Provider"
+                      value={newCred.provider_name}
+                      onChange={(v) => setNewCred({ ...newCred, provider_name: v })}
+                      placeholder="e.g., openai, coinbase"
+                    />
+                    <ConfigField
+                      label="Key Name"
+                      value={newCred.credential_key}
+                      onChange={(v) => setNewCred({ ...newCred, credential_key: v })}
+                      placeholder="e.g., api_key, api_secret"
+                    />
+                    <ConfigField
+                      label="Value"
+                      value={newCred.value}
+                      onChange={(v) => setNewCred({ ...newCred, value: v })}
+                      type="password"
+                      placeholder="Enter secret value"
+                    />
+                    <ConfigField
+                      label="Label (optional)"
+                      value={newCred.label}
+                      onChange={(v) => setNewCred({ ...newCred, label: v })}
+                      placeholder="Description"
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm text-white/70">Credential Type</label>
-                    <select
-                      value={newCredType}
-                      onChange={(e) => setNewCredType(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white/90"
-                    >
-                      <option value="api_key">API Key</option>
-                      <option value="api_secret">API Secret</option>
-                      <option value="access_token">Access Token</option>
-                      <option value="password">Password</option>
-                      <option value="custom">Custom</option>
-                    </select>
-                  </div>
-                  <ConfigField
-                    label="Key Name"
-                    value={newCredKey}
-                    onChange={setNewCredKey}
-                    placeholder="e.g. api_key, api_secret"
-                  />
-                  <ConfigField
-                    label="Label (optional)"
-                    value={newCredLabel}
-                    onChange={setNewCredLabel}
-                    placeholder="e.g. My Trading Account"
-                  />
-                </div>
-                <div className="mb-4">
-                  <ConfigField
-                    label="Value (will be encrypted)"
-                    value={newCredValue}
-                    onChange={setNewCredValue}
-                    placeholder="Enter API key or secret..."
-                    sensitive
-                    description="🔒 Encrypted with AES-256 before storage. Never stored in plaintext."
-                  />
-                </div>
-                <button
-                  onClick={saveCredential}
-                  disabled={!newCredProvider || !newCredKey || !newCredValue}
-                  className="px-4 py-2 bg-emerald-600/70 hover:bg-emerald-600 text-white text-sm rounded transition-colors disabled:opacity-50"
-                >
-                  🔐 Encrypt & Store
-                </button>
-              </div>
-            </div>
-          </ConfigSection>
-
-          {/* ─── Data Ingestion ─────────────────────────────────────────── */}
-          <ConfigSection
-            title="📊 Data Ingestion"
-            description="Market data sources, rate limits, and live testing"
-            expanded={expandedSections.has("ingestion")}
-            onToggle={() => toggleSection("ingestion")}
-          >
-            <div className="space-y-6 mt-4">
-              {/* Quick Actions */}
-              <div className="flex items-center gap-3 p-3 bg-white/[0.02] border border-white/5 rounded">
-                <button
-                  onClick={testAllFree}
-                  disabled={testingAll}
-                  className="px-4 py-2 text-sm bg-emerald-600/70 hover:bg-emerald-600 text-white rounded transition-colors disabled:opacity-50"
-                >
-                  {testingAll ? "⏳ Testing..." : "🧪 Test All Free APIs"}
-                </button>
-                <button
-                  onClick={loadDataSources}
-                  disabled={loadingDataSources}
-                  className="px-3 py-2 text-sm bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 rounded transition-colors disabled:opacity-50"
-                >
-                  🔄 Refresh Sources
-                </button>
-                {Object.keys(testResults).length > 0 && (
-                  <span className="text-sm text-white/50">
-                    ✓ {Object.values(testResults).filter(r => r.ok).length}/{Object.keys(testResults).length} passed
-                  </span>
-                )}
-              </div>
-
-              {/* Test Results */}
-              {Object.keys(testResults).length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {Object.entries(testResults).map(([source, result]) => (
-                    <div
-                      key={source}
-                      className={`p-3 border rounded ${
-                        result.ok
-                          ? "border-emerald-500/30 bg-emerald-500/5"
-                          : "border-red-500/30 bg-red-500/5"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`w-2 h-2 rounded-full ${result.ok ? "bg-emerald-500" : "bg-red-500"}`} />
-                        <span className="text-sm text-white/90 font-medium">{source.replace(/_/g, " ")}</span>
-                      </div>
-                      <p className="text-xs text-white/50 truncate">{result.message}</p>
-                      {result.response_time_ms && (
-                        <p className="text-xs text-white/30">{result.response_time_ms}ms</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Data Sources List */}
-              <div className="space-y-3">
-                <h4 className="text-white/90 font-medium">
-                  Data Sources ({dataSources.length})
-                </h4>
-                {dataSources.length === 0 ? (
-                  <div className="text-sm text-white/40 p-4 bg-white/[0.02] border border-white/5 rounded text-center">
-                    {loadingDataSources ? "Loading data sources..." : "Start the data_ingestion service to see sources."}
-                  </div>
-                ) : (
-                  dataSources.map((source) => (
-                    <div
-                      key={source.name}
-                      className={`p-4 border rounded transition-colors ${
-                        source.is_active
-                          ? "border-white/10 bg-white/[0.02]"
-                          : "border-yellow-500/20 bg-yellow-500/5 opacity-60"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`w-2 h-2 rounded-full ${
-                              source.status === "active"
-                                ? "bg-emerald-500"
-                                : source.status === "error"
-                                ? "bg-red-500"
-                                : "bg-yellow-500"
-                            }`}
-                          />
-                          <h5 className="text-white/90 font-medium">{source.display_name}</h5>
-                          <span className="text-xs bg-white/5 text-white/40 px-2 py-0.5 rounded">
-                            {source.provider_type}
-                          </span>
-                          {!source.requires_auth && (
-                            <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">FREE</span>
-                          )}
-                          {source.requires_auth && (
-                            <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-0.5 rounded">KEY REQUIRED</span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => testSingleSource(source.name)}
-                            className="text-xs text-blue-400 hover:text-blue-300"
-                          >
-                            🧪 Test
-                          </button>
-                          <button
-                            onClick={() => toggleDataSource(source.name)}
-                            className={`text-xs px-2 py-0.5 rounded ${
-                              source.is_active
-                                ? "bg-yellow-600/20 text-yellow-300 hover:bg-yellow-600/30"
-                                : "bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30"
-                            }`}
-                          >
-                            {source.is_active ? "⏸ Pause" : "▶ Enable"}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <span className="text-white/40">Rate Limit:</span>
-                          <span className="text-white/70 ml-1">{source.rate_limit_requests} / {source.rate_limit_period_seconds}s</span>
-                        </div>
-                        <div>
-                          <span className="text-white/40">Poll:</span>
-                          <span className="text-white/70 ml-1">{source.poll_interval_seconds}s</span>
-                        </div>
-                        <div>
-                          <span className="text-white/40">Errors:</span>
-                          <span className={`ml-1 ${source.error_count > 0 ? "text-red-400" : "text-white/70"}`}>
-                            {source.error_count}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-white/40">Last OK:</span>
-                          <span className="text-white/70 ml-1">
-                            {source.last_success_at
-                              ? new Date(source.last_success_at).toLocaleTimeString()
-                              : "Never"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {source.enabled_pairs.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {source.enabled_pairs.map((pair) => (
-                            <span
-                              key={pair}
-                              className="text-xs bg-white/5 text-white/50 px-2 py-0.5 rounded"
-                            >
-                              {pair}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Inline Rate Limit Editor */}
-                      <div className="mt-3 flex items-center gap-3 pt-3 border-t border-white/5">
-                        <span className="text-xs text-white/40">Rate limit:</span>
-                        <input
-                          type="number"
-                          defaultValue={source.rate_limit_requests}
-                          className="w-16 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white/90"
-                          onBlur={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (val && val !== source.rate_limit_requests) {
-                              updateSourceRateLimit(source.name, val, source.rate_limit_period_seconds);
-                            }
-                          }}
-                        />
-                        <span className="text-xs text-white/40">req /</span>
-                        <input
-                          type="number"
-                          defaultValue={source.rate_limit_period_seconds}
-                          className="w-16 bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white/90"
-                          onBlur={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (val && val !== source.rate_limit_period_seconds) {
-                              updateSourceRateLimit(source.name, source.rate_limit_requests, val);
-                            }
-                          }}
-                        />
-                        <span className="text-xs text-white/40">sec</span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Rate Limit Monitor */}
-              {Object.keys(rateLimits).length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-white/90 font-medium">⏱️ Rate Limit Status (Live)</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                    {Object.entries(rateLimits).map(([source, limit]) => (
-                      <div key={source} className="p-3 bg-white/[0.02] border border-white/5 rounded">
-                        <div className="text-xs text-white/50 mb-1">{source.replace(/_/g, " ")}</div>
-                        <div className="text-sm text-white/90">
-                          {limit.tokens_remaining} / {limit.max_requests}
-                        </div>
-                        <div className="mt-1 w-full bg-white/10 rounded-full h-1.5">
-                          <div
-                            className="bg-emerald-500 h-1.5 rounded-full transition-all"
-                            style={{ width: `${Math.min(100, (limit.tokens_remaining / limit.max_requests) * 100)}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </ConfigSection>
-        </div>
-
-        {/* Dynamic Configuration Summary Panel */}
-        <div className="space-y-4 p-6 bg-gradient-to-r from-white/[0.03] to-white/[0.01] border border-white/10 rounded-lg">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            📊 Configuration Overview
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Database Status */}
-            <div className="p-4 bg-white/[0.02] border border-white/5 rounded">
-              <h3 className="text-sm font-medium text-white/70 mb-2">💾 Database</h3>
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">PostgreSQL:</span>
-                  <span className={config.database.postgresql.host ? 'text-green-400' : 'text-red-400'}>
-                    {config.database.postgresql.host ? '✓ Configured' : '✗ Missing'}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">Redis:</span>
-                  <span className={config.database.redis.host ? 'text-green-400' : 'text-red-400'}>
-                    {config.database.redis.host ? '✓ Configured' : '✗ Missing'}
-                  </span>
+                  <button
+                    onClick={handleAddCredential}
+                    disabled={addingCred || !newCred.provider_name || !newCred.credential_key || !newCred.value}
+                    className="mt-3 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/10 disabled:text-white/30 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    {addingCred ? "Adding..." : "Add Credential"}
+                  </button>
                 </div>
               </div>
-            </div>
+            </ConfigSection>
 
-            {/* Trading Status */}
-            <div className="p-4 bg-white/[0.02] border border-white/5 rounded">
-              <h3 className="text-sm font-medium text-white/70 mb-2">💹 Trading</h3>
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">Mode:</span>
-                  <span className={config.exchanges.paperMode ? 'text-blue-400' : 'text-orange-400'}>
-                    {config.exchanges.paperMode ? '📈 Paper' : '⚡ Live'}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">Exchange:</span>
-                  <span className="text-white/60 capitalize">{config.exchanges.activeExchange}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">Keys:</span>
-                  <span className="text-white/50">
-                    {Object.values(config.exchanges.credentials).filter(c => c.apiKey).length}/4
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* LLM Status */}
-            <div className="p-4 bg-white/[0.02] border border-white/5 rounded">
-              <h3 className="text-sm font-medium text-white/70 mb-2">🤖 AI/LLM</h3>
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">Provider:</span>
-                  <span className="text-white/60 capitalize">
-                    {config.llm.providers[config.llm.provider]?.displayName || config.llm.provider}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">API Key:</span>
-                  <span className={config.llm.provider !== 'mock' && config.llm.providers[config.llm.provider]?.fields?.apiKey ? 'text-green-400' : 'text-yellow-400'}>
-                    {config.llm.provider === 'mock' ? '🎯 Mock' : 
-                     config.llm.providers[config.llm.provider]?.fields?.apiKey ? '✓ Set' : '✗ Missing'}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">Total:</span>
-                  <span className="text-white/50">{Object.keys(config.llm.providers).length} providers</span>
-                </div>
-              </div>
-            </div>
-
-            {/* System Status */}
-            <div className="p-4 bg-white/[0.02] border border-white/5 rounded">
-              <h3 className="text-sm font-medium text-white/70 mb-2">⚙️ System</h3>
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">Environment:</span>
-                  <span className={config.service.environment === 'production' ? 'text-red-400' : 'text-green-400'}>
-                    {config.service.environment === 'production' ? '🎤 Prod' : '🔧 Dev'}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">Services:</span>
-                  <span className={Object.values(serviceHealth).filter(s => s.status === 'healthy').length >= 6 ? 'text-green-400' : 'text-yellow-400'}>
-                    {Object.values(serviceHealth).filter(s => s.status === 'healthy').length}/8 up
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">Auto-features:</span>
-                  <span className="text-white/50">
-                    {autoRefreshEnabled ? '🔄' : ''} {autoSaveEnabled ? '💾' : ''}
-                  </span>
-                </div>
-              </div>
+            {/* Last Updated */}
+            <div className="text-center text-sm text-white/30">
+              Last updated: {new Date(config.lastUpdated).toLocaleString()}
             </div>
           </div>
-
-          {/* Quick Actions Bar */}
-          <div className="flex items-center justify-between pt-4 border-t border-white/5">
-            <div className="flex items-center gap-4 text-sm text-white/50">
-              {hasUnsavedChanges && <span className="text-amber-400 flex items-center gap-1">● Unsaved changes detected</span>}
-              {lastUpdated && <span>Last modified: {lastUpdated.toLocaleTimeString()}</span>}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  // Expand all sections for quick review
-                  setExpandedSections(new Set(["database", "exchanges", "llm", "service", "pricing", "credentials", "ingestion"]));
-                }}
-                className="px-3 py-1 text-xs bg-white/5 hover:bg-white/10 text-white/60 border border-white/10 rounded transition-colors"
-              >
-                👁️ Expand All
-              </button>
-              <button
-                onClick={() => {
-                  // Quick validation check
-                  console.log('Running full configuration validation...');
-                  checkServiceHealth();
-                }}
-                className="px-3 py-1 text-xs bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/20 rounded transition-colors"
-              >
-                ✅ Validate Config
-              </button>
-              <button
-                onClick={() => {
-                  if (hasUnsavedChanges) {
-                    saveConfig();
-                  }
-                  downloadEnvFile();
-                }}
-                className="px-3 py-1 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/20 rounded transition-colors"
-              >
-                🚀 Deploy Ready
-              </button>
-            </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-white/40">Unable to load configuration.</p>
+            <p className="text-sm text-white/20 mt-2">Make sure the config service is running on port 3007.</p>
           </div>
-        </div>
-
-        {/* Enhanced Status Footer */}
-        <div className="flex items-center justify-between text-xs text-white/30 pt-4 border-t border-white/5">
-          <div className="flex items-center gap-4">
-            <span>Config last updated: {new Date(config.lastUpdated).toLocaleString()}</span>
-            {hasUnsavedChanges && <span className="text-amber-400">• {hasUnsavedChanges ? 'Modified' : 'Saved'}</span>}
-          </div>
-          <div className="flex items-center gap-4">
-            <span>Trading OS v1.0 • Backend Config Center</span>
-            <span className={Object.values(serviceHealth).filter(s => s.status === 'healthy').length >= 6 ? 'text-emerald-400' : 'text-yellow-400'}>
-              ● System {Object.values(serviceHealth).filter(s => s.status === 'healthy').length >= 6 ? 'Healthy' : 'Degraded'}
-            </span>
-          </div>
-        </div>
+        )}
       </div>
     </PortalShell>
   );
