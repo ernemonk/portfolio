@@ -50,7 +50,8 @@ export default function DatabaseBrowser() {
       loadTableSchema(selectedTable);
       loadTableData(selectedTable, 1);
     }
-  }, [selectedTable, loadTableData, loadTableSchema]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTable]);
 
   // Reload data when search/filter changes
   useEffect(() => {
@@ -60,7 +61,8 @@ export default function DatabaseBrowser() {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [searchTerm, searchColumn, selectedTable, loadTableData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, searchColumn]);
 
   const loadTables = async () => {
     try {
