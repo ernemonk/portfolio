@@ -49,7 +49,7 @@ export default function DatabaseBrowser() {
       loadTableSchema(selectedTable);
       loadTableData(selectedTable, 1);
     }
-  }, [selectedTable]);
+  }, [selectedTable, loadTableData, loadTableSchema]);
 
   // Reload data when search/filter changes
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function DatabaseBrowser() {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [searchTerm, searchColumn]);
+  }, [searchTerm, searchColumn, selectedTable, loadTableData]);
 
   const loadTables = async () => {
     try {

@@ -321,7 +321,7 @@ export const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ serviceId 
         {tests.length === 0 ? (
           <div className="bg-white/[0.03] border border-white/5 rounded-xl p-8 text-center">
             <p className="text-white/40">No tests have been run yet.</p>
-            <p className="text-sm text-white/20 mt-2">Click "Run Tests" to start testing this service.</p>
+            <p className="text-sm text-white/20 mt-2">Click {`"Run Tests"`} to start testing this service.</p>
           </div>
         ) : (
           <div className="space-y-3">

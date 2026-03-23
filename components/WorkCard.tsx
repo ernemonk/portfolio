@@ -1,4 +1,5 @@
 import type { WorkItem } from "@/types";
+import Image from "next/image";
 
 const statusColors: Record<string, string> = {
   active: "text-emerald-400/70 bg-emerald-400/5",
@@ -17,9 +18,11 @@ export default function WorkCard({ item }: { item: WorkItem }) {
       {/* Top row: logo / initial + status */}
       <div className="flex items-start justify-between mb-4">
         {item.logoURL ? (
-          <img
+          <Image
             src={item.logoURL}
             alt={item.name}
+            width={36}
+            height={36}
             className="h-9 w-auto object-contain rounded"
           />
         ) : (

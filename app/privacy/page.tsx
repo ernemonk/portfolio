@@ -41,7 +41,7 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-bold mb-4">1. Overview</h2>
             <div className="space-y-4 text-white/70 leading-relaxed">
               <p>
-                Trading OS ("we," "us," "our," or "Company") operates a comprehensive financial technology platform that helps you manage your trading strategies, portfolios, and market analysis. This Privacy Policy explains how we collect, use, process, and protect your personal information.
+                Trading OS ({`"we," "us," "our," or "Company"`}) operates a comprehensive financial technology platform that helps you manage your trading strategies, portfolios, and market analysis. This Privacy Policy explains how we collect, use, process, and protect your personal information.
               </p>
               <p>
                 We are committed to maintaining the highest standards of data protection and security, complying with applicable privacy regulations including GDPR, CCPA, and other jurisdiction-specific laws.
@@ -146,7 +146,7 @@ export default function PrivacyPage() {
                 <div className="bg-white/[0.02] border border-white/5 p-4 rounded-lg">
                   <h4 className="font-semibold mb-3">Plaid Process Flow:</h4>
                   <ol className="text-white/70 space-y-2 ml-4 list-decimal">
-                    <li>You initiate "Connect Bank" in our app</li>
+                      <li>You initiate {`"Connect Bank"`} in our app</li>
                     <li>Plaid Link modal appears (hosted by Plaid)</li>
                     <li>You select your financial institution and authenticate</li>
                     <li>Plaid securely retrieves your authorization</li>
