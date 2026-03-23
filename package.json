@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "@xyflow/react": "^12.10.1",
     "firebase": "^10.12.2",
     "firebase-admin": "^13.7.0",
@@ -16,7 +17,10 @@
     "next": "^14.2.20",
     "prompts": "^2.4.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",
