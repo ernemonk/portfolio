@@ -1,8 +1,19 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import PortalShell from "@/components/portal/PortalShell";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/context/AuthContext";
 import * as tradingAPI from "@/lib/trading-api";
+import { HealthCheckResponse, getSystemHealthStatus } from "@/lib/service-health";
+
+const SystemFlowView = dynamic(
+  () => import("@/components/portal/SystemFlowView"),
+  { ssr: false, loading: () => (
+    <div className="w-full h-[860px] bg-white/[0.02] border border-white/5 rounded-xl animate-pulse flex items-center justify-center">
+      <span className="text-white/30">Loading Flow View…</span>
+    </div>
+  )}
+);
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -14,53 +25,6 @@ interface ServiceCard {
   uptime?: number;
   latency?: number;
   details?: Record<string, string>;
-}
-
-// ─── Components ───────────────────────────────────────────────────────────
-
-function StatusIndicator({ status }: { status: ServiceStatus }) {
-  const colors: Record<ServiceStatus, string> = {
-    healthy: "bg-emerald-400",
-    degraded: "bg-yellow-400",
-    unhealthy: "bg-red-400",
-    loading: "bg-white/20 animate-pulse",
-  };
-  return <div className={`w-2.5 h-2.5 rounded-full ${colors[status]}`} />;
-}
-
-function ServiceStatusCard({ service }: { service: ServiceCard }) {
-  return (
-    <div className="bg-white/[0.03] border border-white/5 rounded-xl p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold capitalize">{service.name}</h3>
-        <StatusIndicator status={service.status} />
-      </div>
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between text-white/60">
-          <span>Status</span>
-          <span className={`font-medium ${
-            service.status === "healthy" ? "text-emerald-400" :
-            service.status === "degraded" ? "text-yellow-400" :
-            service.status === "unhealthy" ? "text-red-400" : "text-white/40"
-          }`}>
-            {service.status.charAt(0).toUpperCase() + service.status.slice(1)}
-          </span>
-        </div>
-        {service.uptime !== undefined && (
-          <div className="flex justify-between text-white/60">
-            <span>Uptime</span>
-            <span className="font-mono">{formatUptime(service.uptime)}</span>
-          </div>
-        )}
-        {service.details && Object.entries(service.details).map(([key, value]) => (
-          <div key={key} className="flex justify-between text-white/60">
-            <span>{key}</span>
-            <span className="font-mono">{value}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 function StrategyRow({ 
@@ -110,21 +74,19 @@ export default function TradingPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [systemHealth, setSystemHealth] = useState<tradingAPI.SystemHealth | null>(null);
   const [strategies, setStrategies] = useState<tradingAPI.Strategy[]>([]);
   const [queueDepth, setQueueDepth] = useState<number | null>(null);
   const [togglingStrategy, setTogglingStrategy] = useState<string | null>(null);
+  const [healthData, setHealthData] = useState<HealthCheckResponse[]>([]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [health, strats, queue] = await Promise.all([
-        tradingAPI.getSystemHealth(),
+      const [strats, queue] = await Promise.all([
         tradingAPI.getStrategies().catch(() => []),
         tradingAPI.getQueueDepth().catch(() => ({ depth: 0 })),
       ]);
-      setSystemHealth(health);
       setStrategies(strats);
       setQueueDepth(queue.depth);
     } catch (err) {
@@ -144,6 +106,21 @@ export default function TradingPage() {
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, [user, loadData]);
+
+  // Load health data for flow view
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    const loadHealth = async () => {
+      try {
+        const health = await getSystemHealthStatus();
+        if (!cancelled) setHealthData(health.services);
+      } catch {}
+    };
+    loadHealth();
+    const interval = setInterval(loadHealth, 30000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [user]);
 
   const handleToggleStrategy = async (strategy: tradingAPI.Strategy) => {
     setTogglingStrategy(strategy.name);
@@ -178,40 +155,6 @@ export default function TradingPage() {
     );
   }
 
-  const services: ServiceCard[] = systemHealth ? [
-    {
-      name: "Orchestrator",
-      status: systemHealth.orchestrator?.status === "ok" ? "healthy" : 
-              systemHealth.orchestrator ? "degraded" : "unhealthy",
-      uptime: systemHealth.orchestrator?.uptime,
-      details: systemHealth.orchestrator?.checks,
-    },
-    {
-      name: "Strategy",
-      status: systemHealth.strategy?.status === "ok" ? "healthy" : 
-              systemHealth.strategy ? "degraded" : "unhealthy",
-      uptime: systemHealth.strategy?.uptime,
-      details: systemHealth.strategy?.checks,
-    },
-    {
-      name: "Risk",
-      status: systemHealth.risk?.status === "ok" ? "healthy" : 
-              systemHealth.risk ? "degraded" : "unhealthy",
-      uptime: systemHealth.risk?.uptime,
-      details: systemHealth.risk?.checks,
-    },
-    {
-      name: "Execution",
-      status: systemHealth.execution?.status === "ok" ? "healthy" : 
-              systemHealth.execution ? "degraded" : "unhealthy",
-      uptime: systemHealth.execution?.uptime,
-      details: {
-        ...systemHealth.execution?.checks,
-        ...(queueDepth !== null ? { "Queue Depth": String(queueDepth) } : {}),
-      },
-    },
-  ] : [];
-
   return (
     <PortalShell
       title="Trading"
@@ -245,66 +188,8 @@ export default function TradingPage() {
           </div>
         )}
 
-        {/* System Overview */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">System Status</h2>
-            {systemHealth && (
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                systemHealth.overall === "healthy" ? "bg-emerald-400/10 text-emerald-400" :
-                systemHealth.overall === "degraded" ? "bg-yellow-400/10 text-yellow-400" :
-                "bg-red-400/10 text-red-400"
-              }`}>
-                {systemHealth.overall.charAt(0).toUpperCase() + systemHealth.overall.slice(1)}
-              </span>
-            )}
-          </div>
-
-          {loading && !systemHealth ? (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-white/[0.03] border border-white/5 rounded-xl p-5 animate-pulse">
-                  <div className="h-5 bg-white/10 rounded w-24 mb-4" />
-                  <div className="space-y-2">
-                    <div className="h-4 bg-white/5 rounded" />
-                    <div className="h-4 bg-white/5 rounded w-3/4" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {services.map((service) => (
-                <ServiceStatusCard key={service.name} service={service} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Strategies */}
-        <section>
-          <h2 className="text-lg font-semibold mb-4">Strategies</h2>
-          
-          {strategies.length === 0 ? (
-            <div className="bg-white/[0.03] border border-white/5 rounded-xl p-8 text-center">
-              <p className="text-white/40">No strategies configured.</p>
-              <p className="text-sm text-white/20 mt-2">Strategies will appear here when the strategy service is running.</p>
-            </div>
-          ) : (
-            <div className="bg-white/[0.03] border border-white/5 rounded-xl overflow-hidden">
-              <div className="divide-y divide-white/5">
-                {strategies.map((strategy) => (
-                  <StrategyRow
-                    key={strategy.name}
-                    strategy={strategy}
-                    onToggle={() => handleToggleStrategy(strategy)}
-                    loading={togglingStrategy === strategy.name}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </section>
+        {/* System Status Overview - NEW */}
+        <SystemFlowView healthData={healthData} loading={loading} />
 
         {/* Quick Stats */}
         <section>

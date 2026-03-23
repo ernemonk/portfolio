@@ -30,6 +30,12 @@ export default function Footer() {
             >
               Contact
             </Link>
+            <Link
+              href="/privacy"
+              className="text-xs text-white/20 hover:text-white/60 transition-colors duration-300 uppercase tracking-wider font-mono"
+            >
+              Privacy
+            </Link>
             <a
               href="https://github.com/ernemonk"
               target="_blank"
