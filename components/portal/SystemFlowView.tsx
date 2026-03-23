@@ -455,8 +455,7 @@ export default function SystemFlowView({ healthData = [], loading = false }: Sys
   const healthMap = useMemo(() => {
     const map = new Map<string, "healthy" | "degraded" | "unhealthy">();
     healthData.forEach((h) => {
-      // Service IDs are already normalized (e.g., "data_ingestion", "config")
-      map.set(h.service, h.status);
+      map.set(h.service.toLowerCase().replace(/[\s-]/g, "_"), h.status);
     });
     return map;
   }, [healthData]);
