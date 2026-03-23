@@ -84,7 +84,7 @@ export async function checkServiceHealth(
     const data = await response.json();
     return {
       status: data.status === "ok" ? "healthy" : "degraded",
-      service: serviceConfig.name,
+      service: serviceConfig.id, // Use ID for consistent matching
       version: data.version,
       uptime: data.uptime,
       timestamp: data.timestamp || Date.now(),
@@ -96,7 +96,7 @@ export async function checkServiceHealth(
   } catch (error) {
     return {
       status: "unhealthy",
-      service: serviceConfig.name,
+      service: serviceConfig.id, // Use ID for consistent matching
       timestamp: Date.now(),
       checks: {
         "error": error instanceof Error ? error.message : "Unknown error",
