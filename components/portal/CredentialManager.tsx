@@ -142,7 +142,7 @@ export default function CredentialManager() {
     
     try {
       const res = await fetch(`http://localhost:3007/credentials/${id}/decrypt`, {
-        method: "GET",
+        method: "POST",
       });
       
       if (res.ok) {
