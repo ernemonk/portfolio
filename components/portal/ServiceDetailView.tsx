@@ -9,8 +9,6 @@ import {
 } from "@/lib/service-health";
 import { getService, ServiceConfig } from "@/lib/service-registry";
 import Link from "next/link";
-import CredentialManager from "@/components/portal/CredentialManager";
-import DatabaseBrowser from "@/components/portal/DatabaseBrowser";
 import ServiceInfoCard from "@/components/portal/ServiceInfoCard";
 
 interface ServiceDetailViewProps {
@@ -284,22 +282,7 @@ export const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ serviceId 
         )}
       </div>
 
-      {/* Credential Manager - Only for Data Ingestion Service */}
-      {serviceId === "data_ingestion" && (
-        <div>
-          <CredentialManager />
-        </div>
-      )}
-
-      {/* Database Browser - Only for Data Ingestion Service */}
-      {serviceId === "data_ingestion" && (
-        <div>
-          <DatabaseBrowser />
-        </div>
-      )}
-
-      {/* Tests Section - Hidden for Data Ingestion (replaced by Database Browser) */}
-      {serviceId !== "data_ingestion" && (
+      {/* Tests Section */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Service Tests</h2>
@@ -370,7 +353,6 @@ export const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ serviceId 
           </div>
         )}
       </div>
-      )}
 
       {/* Additional Info */}
       {health?.checks && Object.keys(health.checks).length > 0 && (

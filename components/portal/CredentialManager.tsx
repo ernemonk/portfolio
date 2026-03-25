@@ -15,8 +15,9 @@ interface Credential {
 interface VaultStatus {
   total_credentials: number;
   active_credentials: number;
-  providers: string[];
-  vault_initialized: boolean;
+  encryption?: string;
+  vault_key_set?: boolean;
+  providers?: string[];
 }
 
 export default function CredentialManager() {
@@ -42,7 +43,7 @@ export default function CredentialManager() {
 
   const loadCredentials = async () => {
     try {
-      const res = await fetch("http://localhost:3009/credentials");
+      const res = await fetch("http://localhost:3007/credentials");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setCredentials(data);
@@ -55,7 +56,7 @@ export default function CredentialManager() {
 
   const loadVaultStatus = async () => {
     try {
-      const res = await fetch("http://localhost:3009/vault/status");
+      const res = await fetch("http://localhost:3007/vault/status");
       if (res.ok) {
         const data = await res.json();
         setVaultStatus(data);
@@ -71,7 +72,7 @@ export default function CredentialManager() {
     setSuccess(null);
 
     try {
-      const res = await fetch("http://localhost:3009/credentials", {
+      const res = await fetch("http://localhost:3007/credentials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newCred),
@@ -102,7 +103,7 @@ export default function CredentialManager() {
     if (!confirm(`Delete credential for ${provider}?`)) return;
 
     try {
-      const res = await fetch(`http://localhost:3009/credentials/${id}`, {
+      const res = await fetch(`http://localhost:3007/credentials/${id}`, {
         method: "DELETE",
       });
 
@@ -149,7 +150,9 @@ export default function CredentialManager() {
           </div>
           <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4">
             <div className="text-sm text-white/60 mb-1">Providers</div>
-            <div className="text-2xl font-bold">{vaultStatus.providers.length}</div>
+            <div className="text-2xl font-bold">
+              {Array.isArray(vaultStatus.providers) ? vaultStatus.providers.length : "-"}
+            </div>
           </div>
           <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4">
             <div className="text-sm text-white/60 mb-1">Encryption</div>

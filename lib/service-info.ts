@@ -493,42 +493,53 @@ export const SERVICE_DETAILED_INFO: Record<string, ServiceDetailedInfo> = {
   },
 
   config: {
-    overview: "The Config service provides centralized configuration management for all services. It acts as the single source of truth for system settings, allowing dynamic configuration changes without service restarts.",
+    overview: "The Config service is the single source of truth for system settings, encrypted API credentials, and database introspection. It provides centralized configuration management, a credential vault with AES-256 Fernet encryption, and a database browser for exploring PostgreSQL tables — all from one place.",
     responsibilities: [
       "Store and serve configuration for all services",
+      "Manage the encrypted API credential vault (AES-256 Fernet)",
+      "Provide database browser for exploring PostgreSQL tables",
       "Manage environment-specific settings (dev, staging, prod)",
-      "Provide configuration versioning and rollback",
-      "Validate configuration changes",
-      "Notify services of configuration updates",
-      "Encrypt sensitive configuration values",
-      "Audit configuration changes"
+      "Validate configuration changes before applying",
+      "Notify services of configuration updates via Redis pub/sub",
+      "Audit configuration changes and provide rollback"
     ],
     keyFeatures: [
       "Centralized configuration store in PostgreSQL",
+      "Encrypted credential vault with full CRUD + verify",
+      "Database browser with pagination, search, and schema inspection",
       "Hot-reload support (no service restart needed)",
       "Configuration inheritance and overrides",
       "Schema validation for config changes",
-      "Change history and rollback capability",
-      "Service-specific and global configurations",
-      "API for CRUD operations on configs"
+      "Change history and rollback capability"
     ],
     endpoints: [
       { path: "/health", method: "GET", description: "Service health check" },
-      { path: "/config/{service}", method: "GET", description: "Get config for specific service" },
-      { path: "/config/{service}", method: "PUT", description: "Update service configuration" },
-      { path: "/config/global", method: "GET", description: "Get global system config" },
-      { path: "/config/validate", method: "POST", description: "Validate configuration" },
-      { path: "/config/history", method: "GET", description: "Get configuration history" }
+      { path: "/config", method: "GET", description: "Get full system configuration" },
+      { path: "/config", method: "PUT", description: "Update system configuration" },
+      { path: "/config/validate", method: "GET", description: "Validate current configuration" },
+      { path: "/config/env", method: "GET", description: "Generate .env file content" },
+      { path: "/credentials", method: "GET", description: "List stored credentials (values hidden)" },
+      { path: "/credentials", method: "POST", description: "Store or update encrypted credential" },
+      { path: "/credentials/{id}", method: "PUT", description: "Update credential fields" },
+      { path: "/credentials/{id}", method: "DELETE", description: "Delete a credential" },
+      { path: "/credentials/verify/{id}", method: "POST", description: "Verify credential decryption" },
+      { path: "/vault/status", method: "GET", description: "Vault overview (counts, encryption info)" },
+      { path: "/database/tables", method: "GET", description: "List all tables with row counts" },
+      { path: "/database/tables/{name}/schema", method: "GET", description: "Get table column schema" },
+      { path: "/database/tables/{name}/data", method: "GET", description: "Paginated table data with search" },
+      { path: "/data-sources", method: "GET", description: "List data source configurations" },
+      { path: "/data-sources/{name}", method: "PATCH", description: "Update data source settings" }
     ],
     dependencies: [
-      "PostgreSQL (configuration storage)",
-      "Redis (config cache and pub/sub)",
-      "Vault (for credential management)"
+      "PostgreSQL (config, credentials, and data storage)",
+      "Redis (config cache and pub/sub notifications)",
+      "VAULT_MASTER_KEY env var (Fernet encryption key)"
     ],
     serviceInteractions: {
       inbound: [
         { service: "All Services", description: "Configuration fetch requests" },
-        { service: "User/Frontend", description: "Configuration update requests" }
+        { service: "User/Frontend", description: "Credential vault management" },
+        { service: "User/Frontend", description: "Database browser queries" }
       ],
       outbound: [
         { service: "All Services", description: "Configuration push notifications" },
@@ -538,22 +549,22 @@ export const SERVICE_DETAILED_INFO: Record<string, ServiceDetailedInfo> = {
     dataFlow: {
       inputs: [
         "Configuration update requests",
-        "Configuration queries from services",
-        "Default configuration templates",
+        "Credential store / update / delete operations",
+        "Database introspection queries",
         "Environment variables"
       ],
       outputs: [
         "Service configurations (JSON)",
-        "Configuration change notifications",
-        "Validation results",
-        "Configuration history"
+        "Credential metadata (never plaintext values)",
+        "Database table schemas and paginated data",
+        "Configuration validation results"
       ]
     },
     configuration: [
+      { key: "VAULT_MASTER_KEY", description: "AES-256 Fernet encryption key for credentials", default: "change-me" },
       { key: "CONFIG_CACHE_TTL", description: "Config cache duration", default: "300s" },
       { key: "ENABLE_HOT_RELOAD", description: "Allow config hot-reload", default: "true" },
-      { key: "VALIDATE_ON_UPDATE", description: "Validate configs before saving", default: "true" },
-      { key: "MAX_HISTORY_ENTRIES", description: "Keep N config versions", default: "50" }
+      { key: "VALIDATE_ON_UPDATE", description: "Validate configs before saving", default: "true" }
     ],
     performance: {
       avgResponseTime: "10-30ms for config reads (cached)",
@@ -635,70 +646,72 @@ export const SERVICE_DETAILED_INFO: Record<string, ServiceDetailedInfo> = {
   },
 
   data_ingestion: {
-    overview: "The Data Ingestion service is the gateway to market data. It fetches real-time and historical data from multiple sources (Binance, CoinGecko, Yahoo Finance, Alpha Vantage), manages API credentials securely, and provides a unified interface for data access.",
+    overview: "The Data Ingestion service is the gateway to market data. It fetches real-time and historical data from multiple sources (Binance, CoinGecko, Yahoo Finance, Alpha Vantage), manages rate limiting, and provides a unified interface for data access. Credentials and database browsing are managed by the Config service (3007).",
     responsibilities: [
       "Ingest real-time market data from multiple sources",
       "Fetch historical OHLCV candles for backtesting",
-      "Manage API credentials with AES-256 encryption",
       "Rate limit API requests to avoid bans",
       "Store price snapshots and candles in PostgreSQL",
-      "Provide database browser for exploring stored data",
-      "Handle API errors and implement retry logic"
+      "Build and cache data source connectors",
+      "Handle API errors and implement retry logic",
+      "Test connectivity to any data source on demand"
     ],
     keyFeatures: [
       "Multi-source data aggregation (10+ providers)",
-      "Encrypted credential vault with web UI",
       "Configurable rate limiting per data source",
-      "Database browser with pagination and search",
       "Support for both free and paid APIs",
       "Automatic data source failover",
-      "Data quality validation and cleaning"
+      "Data quality validation and cleaning",
+      "OHLCV candle + live price snapshot storage",
+      "Connector auto-build from DB credentials"
     ],
     endpoints: [
       { path: "/health", method: "GET", description: "Service health and connector status" },
-      { path: "/credentials", method: "POST", description: "Store encrypted credential" },
-      { path: "/credentials", method: "GET", description: "List stored credentials" },
-      { path: "/fetch/prices", method: "POST", description: "Fetch live prices" },
-      { path: "/fetch/candles", method: "POST", description: "Fetch OHLCV candles" },
-      { path: "/database/tables", method: "GET", description: "List database tables" },
-      { path: "/database/tables/{name}/data", method: "GET", description: "Browse table data" }
+      { path: "/sources", method: "GET", description: "List data source configurations" },
+      { path: "/sources/{name}", method: "PATCH", description: "Update source settings" },
+      { path: "/sources/{name}/pairs", method: "PUT", description: "Update enabled symbol pairs" },
+      { path: "/rate-limits", method: "GET", description: "Current rate limit status" },
+      { path: "/fetch/prices", method: "POST", description: "Fetch live prices from a source" },
+      { path: "/fetch/candles", method: "POST", description: "Fetch OHLCV candle data" },
+      { path: "/test-source/{name}", method: "GET", description: "Test connectivity to a source" },
+      { path: "/test-all-free", method: "GET", description: "Test all free data sources" },
+      { path: "/symbols/{source}", method: "GET", description: "Get available symbols for a source" },
+      { path: "/ingestion-log", method: "GET", description: "View data ingestion logs" },
+      { path: "/price-history", method: "GET", description: "Query stored price snapshots" }
     ],
     dependencies: [
-      "PostgreSQL (data and credential storage)",
-      "Redis (rate limiting)",
-      "External APIs (Binance, CoinGecko, etc.)",
-      "Vault (encryption master key)"
+      "PostgreSQL (price data and candle storage)",
+      "Redis (rate limiting counters)",
+      "External APIs (Binance, CoinGecko, Yahoo, Alpha Vantage)",
+      "Config service (3007) for credential management"
     ],
     serviceInteractions: {
       inbound: [
         { service: "All Services", description: "Market data fetch requests" },
-        { service: "User/Frontend", description: "Credential management operations" },
         { service: "Portfolio", description: "Price data requests for P&L" },
-        { service: "Execution", description: "Credential fetch for exchanges" }
+        { service: "Execution", description: "Live price feeds for order execution" },
+        { service: "Strategy", description: "Historical candle data for analysis" }
       ],
       outbound: [
-        { service: "All Services", description: "Real-time market data" },
         { service: "External APIs", description: "Data fetch from providers" },
-        { service: "PostgreSQL", description: "Store market data and credentials" }
+        { service: "PostgreSQL", description: "Store market data snapshots and candles" }
       ]
     },
     dataFlow: {
       inputs: [
         "Data fetch requests from services",
-        "API credentials from users",
         "Rate limit configurations",
-        "Data source priorities"
+        "Data source priorities",
+        "Symbol pair configurations"
       ],
       outputs: [
         "Real-time price data",
         "Historical OHLCV candles",
         "Data quality metrics",
-        "API usage statistics",
-        "Database query results"
+        "API usage statistics"
       ]
     },
     configuration: [
-      { key: "VAULT_MASTER_KEY", description: "Encryption key for credentials", default: "change-me" },
       { key: "DEFAULT_DATA_SOURCE", description: "Primary data source", default: "binance_public" },
       { key: "RATE_LIMIT_REQUESTS", description: "Max requests per minute", default: "1000" },
       { key: "CACHE_PRICE_TTL", description: "Price cache duration", default: "60s" }

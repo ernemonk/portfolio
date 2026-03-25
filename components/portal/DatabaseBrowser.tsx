@@ -67,7 +67,7 @@ export default function DatabaseBrowser() {
   const loadTables = async () => {
     try {
       setError(null);
-      const res = await fetch("http://localhost:3009/database/tables");
+      const res = await fetch("http://localhost:3007/database/tables");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setTables(data);
@@ -80,7 +80,7 @@ export default function DatabaseBrowser() {
 
   const loadTableSchema = async (tableName: string) => {
     try {
-      const res = await fetch(`http://localhost:3009/database/tables/${tableName}/schema`);
+      const res = await fetch(`http://localhost:3007/database/tables/${tableName}/schema`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setSchema(data);
@@ -104,7 +104,7 @@ export default function DatabaseBrowser() {
       }
 
       const res = await fetch(
-        `http://localhost:3009/database/tables/${tableName}/data?${params}`
+        `http://localhost:3007/database/tables/${tableName}/data?${params}`
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
