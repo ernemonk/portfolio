@@ -27,6 +27,8 @@ export default function CredentialManager() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [decryptedValues, setDecryptedValues] = useState<Record<number, string>>({});
+  const [decryptingIds, setDecryptingIds] = useState<Set<number>>(new Set());
 
   const [newCred, setNewCred] = useState({
     provider_name: "",
@@ -112,8 +114,55 @@ export default function CredentialManager() {
       setSuccess("Credential deleted successfully");
       loadCredentials();
       loadVaultStatus();
+      // Remove from decrypted values cache
+      setDecryptedValues(prev => {
+        const updated = { ...prev };
+        delete updated[id];
+        return updated;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete credential");
+    }
+  };
+
+  const handleViewCredential = async (id: number) => {
+    // If already decrypted, hide it
+    if (decryptedValues[id]) {
+      setDecryptedValues(prev => {
+        const updated = { ...prev };
+        delete updated[id];
+        return updated;
+      });
+      return;
+    }
+
+    // Start decrypting
+    setDecryptingIds(prev => new Set(prev).add(id));
+    setError(null);
+    
+    try {
+      const res = await fetch(`http://localhost:3007/credentials/${id}/decrypt`, {
+        method: "GET",
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setDecryptedValues(prev => ({
+          ...prev,
+          [id]: data.decrypted_value
+        }));
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.detail || `Failed to decrypt credential`);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to decrypt credential");
+    } finally {
+      setDecryptingIds(prev => {
+        const updated = new Set(prev);
+        updated.delete(id);
+        return updated;
+      });
     }
   };
 
@@ -318,14 +367,44 @@ export default function CredentialManager() {
                         <span className="text-white/40">Added:</span>{" "}
                         {new Date(cred.created_at).toLocaleString()}
                       </div>
+                      
+                      {/* Decrypted Value Display */}
+                      {decryptedValues[cred.id] && (
+                        <div className="mt-3 p-3 bg-yellow-400/5 border border-yellow-400/20 rounded-lg">
+                          <div className="text-yellow-400 text-xs font-semibold mb-1">
+                            🔓 DECRYPTED VALUE (click hide to conceal)
+                          </div>
+                          <div className="font-mono text-sm text-white break-all select-all">
+                            {decryptedValues[cred.id]}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDelete(cred.id, cred.provider_name)}
-                    className="px-3 py-1.5 bg-red-400/10 hover:bg-red-400/20 text-red-400 rounded text-sm transition-colors"
-                  >
-                    Delete
-                  </button>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleViewCredential(cred.id)}
+                      disabled={decryptingIds.has(cred.id)}
+                      className={`px-3 py-1.5 rounded text-sm transition-colors ${
+                        decryptedValues[cred.id]
+                          ? "bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400"
+                          : "bg-blue-400/10 hover:bg-blue-400/20 text-blue-400"
+                      } disabled:opacity-50`}
+                    >
+                      {decryptingIds.has(cred.id)
+                        ? "🔄 Decrypting..."
+                        : decryptedValues[cred.id]
+                        ? "👁️ Hide"
+                        : "👁️ View"}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(cred.id, cred.provider_name)}
+                      className="px-3 py-1.5 bg-red-400/10 hover:bg-red-400/20 text-red-400 rounded text-sm transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
