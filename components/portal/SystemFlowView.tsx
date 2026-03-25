@@ -37,8 +37,6 @@ interface ServiceNodeData {
 // ─── Custom Node ──────────────────────────────────────────────────────────
 
 function ServiceNode({ data, selected }: NodeProps<Node<ServiceNodeData>>) {
-  const [expanded, setExpanded] = React.useState(false);
-  
   const statusColors = {
     healthy: {
       bg: "from-emerald-500/20 to-emerald-500/5",
@@ -72,13 +70,6 @@ function ServiceNode({ data, selected }: NodeProps<Node<ServiceNodeData>>) {
 
   const s = statusColors[data.status];
 
-  const handleClick = (e: React.MouseEvent) => {
-    if (data.serviceId === 'config') {
-      e.stopPropagation();
-      setExpanded(!expanded);
-    }
-  };
-
   return (
     <div
       className={`
@@ -88,10 +79,8 @@ function ServiceNode({ data, selected }: NodeProps<Node<ServiceNodeData>>) {
         rounded-xl px-5 py-4 min-w-[180px]
         transition-all duration-300
         ${selected ? "ring-2 ring-purple-400/60 scale-105" : "hover:scale-[1.03]"}
-        ${expanded ? "scale-110 z-50" : ""}
         shadow-lg ${s.glow}
       `}
-      onClick={handleClick}
     >
       {/* Input handle */}
       <Handle
@@ -143,66 +132,7 @@ function ServiceNode({ data, selected }: NodeProps<Node<ServiceNodeData>>) {
         id="right"
         className="!w-3 !h-3 !bg-white/20 !border-white/30 !-right-1.5"
       />
-
-      {/* Expanded Config Functionality */}
-      {expanded && data.serviceId === 'config' && (
-        <div className="absolute top-full left-0 mt-2 w-80 bg-black/90 backdrop-blur-lg border border-white/20 rounded-xl p-4 shadow-2xl z-50">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-sm font-semibold text-white">Configuration Center</h4>
-            <button 
-              onClick={(e) => { e.stopPropagation(); setExpanded(false); }}
-              className="text-white/40 hover:text-white/60"
-            >
-              ✕
-            </button>
-          </div>
-          
-          <div className="space-y-3">
-            <ConfigExpansionSection 
-              title="🔐 Credential Manager" 
-              description="Manage API keys and secrets"
-              onClick={() => window.location.href = '/portal/config'}
-            />
-            <ConfigExpansionSection 
-              title="🗄️ Database Browser" 
-              description="Browse PostgreSQL data"
-              onClick={() => window.location.href = '/portal/config'}
-            />
-            <ConfigExpansionSection 
-              title="⚙️ Service Settings" 
-              description="Configure system parameters"
-              onClick={() => window.location.href = '/portal/config'}
-            />
-            <ConfigExpansionSection 
-              title="🔧 Health Monitor" 
-              description="View service status"
-              onClick={() => window.location.href = '/portal/config'}
-            />
-          </div>
-        </div>
-      )}
     </div>
-  );
-}
-
-// Helper component for config sections
-function ConfigExpansionSection({ 
-  title, 
-  description, 
-  onClick 
-}: { 
-  title: string; 
-  description: string; 
-  onClick: () => void;
-}) {
-  return (
-    <button 
-      onClick={onClick}
-      className="w-full text-left p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors border border-white/10 hover:border-white/20"
-    >
-      <div className="text-sm font-medium text-white">{title}</div>
-      <div className="text-xs text-white/50 mt-1">{description}</div>
-    </button>
   );
 }
 
@@ -552,8 +482,10 @@ export default function SystemFlowView({ healthData = [], loading = false }: Sys
   const onNodeClick = useCallback(
     (_event: React.MouseEvent, node: Node) => {
       const serviceId = (node.data as ServiceNodeData).serviceId;
-      // Config node handles its own expansion, don't navigate
-      if (serviceId !== 'config') {
+      // Navigate to the appropriate page for all services
+      if (serviceId === 'config') {
+        router.push('/portal/config');
+      } else {
         router.push(`/portal/trading/${serviceId}`);
       }
     },
