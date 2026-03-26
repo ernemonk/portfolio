@@ -16,14 +16,15 @@ It's designed for a **single operator** who wants full control over their tradin
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    FRONTEND (Next.js)                   │
-│  Portal · Flow DAG · Config · Credentials · Analytics   │
+│                    FRONTEND (Next.js 14.2)              │
+│  Trading Portal · React Flow DAG · Tasks/Vision Pages   │
+│         Config UI · Credentials · Analytics             │
 └──────────────────────┬──────────────────────────────────┘
                        │
 ┌──────────────────────┴──────────────────────────────────┐
-│                 ORCHESTRATOR (Port 3001)                 │
-│         Pipeline Coordinator · API Gateway              │
-│    Regime Classification · Multi-Agent Voting           │
+│            ORCHESTRATOR (Port 3001/3005)                │
+│         Pipeline Coordinator · Multi-Agent Voting       │
+│         Regime Classification · Trade Routing           │
 └───┬──────┬──────┬──────┬──────┬──────┬──────┬───────────┘
     │      │      │      │      │      │      │
     ▼      ▼      ▼      ▼      ▼      ▼      ▼
@@ -33,43 +34,47 @@ It's designed for a **single operator** who wants full control over their tradin
     └──────────── Data Ingestion ──────────────┘
                     3009
                      │
-              ┌──────┴──────┐
-              │  PostgreSQL  │
-              │    Redis     │
-              └─────────────┘
+        ┌────────────┼────────────┐
+        │            │            │
+    PostgreSQL    Redis      9+ Data APIs
+    (84 candles)  (state)    (Binance, Yahoo, etc.)
 ```
 
 **Core Principles:**
-1. **Modularity** — Each service is independently deployable and testable
+1. **Modularity** — Each service independently deployable, own data-control interface
 2. **Safety First** — 6-level risk protection hierarchy, kill switch always available
-3. **Paper Before Live** — Full paper trading pipeline before any real money
+3. **Paper Before Live** — Full paper trading pipeline validated before live money
 4. **Data Sovereignty** — All data stays on your infrastructure
 5. **AI-Augmented** — Local + hosted LLMs for market analysis, not black-box signals
+6. **Self-Contained Services** — Each microservice has its own admin UI (no unnecessary frontend tabs)
 
 ---
 
 ## 🗺️ Roadmap
 
-### Phase 1: Foundation ✅ (Current)
+### Phase 1: Foundation ✅ (COMPLETE)
 > *Infrastructure is built, services are running, modules are scaffolded*
 
-- ✅ 9 microservices running in Docker Compose
+- ✅ 10 microservices running in Docker Compose (postgres, redis, 8 services)
 - ✅ PostgreSQL with 11 tables, Redis for caching/queues
 - ✅ Shared Pydantic models for type-safe inter-service contracts
 - ✅ AES-256 credential vault for API key encryption
 - ✅ React Flow DAG for system visualization
-- ✅ Frontend portal with auth, config management, DB browser
+- ✅ Frontend portal with auth, config management, Tasks & Vision markdown pages
 - ✅ 4 built-in trading strategies (DCA, Grid, Momentum RSI, MA-Crossover)
-- ✅ 9+ data source connectors (Binance, CoinGecko, Yahoo, etc.)
+- ✅ 9+ data source connectors (Binance, CoinGecko, Kraken, Yahoo Finance, Alpha Vantage, Coinpaprika, CoinCap, FMP, IEX Cloud)
 - ✅ Paper trade execution engine
+- ✅ Data Ingestion service with collapsible control panels per source
 
-### Phase 2: Integration 🔄 (In Progress)
+### Phase 2: Integration 🔄 (IN PROGRESS — Data Flowing)
 > *Connect the dots — make data flow end-to-end*
 
-- 🔄 Wire Data Ingestion → Orchestrator for real OHLCV data
-- 🔄 Wire Strategy signals → Risk evaluation → Execution
-- 🔄 Wire trade fills → Portfolio position updates
-- 🔄 Wire Analytics metrics refresh from actual trade data
+- ✅ Data Ingestion → PostgreSQL (84 BTC/ETH candles loaded)
+- ✅ Data source connector testing (9 sources verified)
+- ✅ Multi-API symbol discovery (live dropdown menus for coins & stocks)
+- 🔄 Strategy signals → Risk evaluation → Execution pipeline
+- 🔄 Trade fills → Portfolio position updates
+- 🔄 Analytics metrics refresh from actual trade data
 - ⬜ First complete paper trade (crypto) end-to-end
 - ⬜ First complete paper trade (equities) end-to-end
 - ⬜ Audit log for full pipeline traceability
@@ -122,11 +127,11 @@ It's designed for a **single operator** who wants full control over their tradin
 
 ## 💰 Supported Markets
 
-### Current (Phase 1-2)
-| Market | Data Sources | Execution |
-|--------|-------------|-----------|
-| **Crypto** | Binance, CoinGecko, Kraken, CoinCap, Coinpaprika | Paper (Binance live ready) |
-| **US Equities** | Yahoo Finance, Alpha Vantage, FMP, IEX Cloud | Paper (Alpaca live ready) |
+### Currently Active (Phase 1-2)
+| Market | Data Sources | Execution | Status |
+|--------|-------------|-----------|--------|
+| **Crypto** | Binance, CoinGecko (19 coins), Kraken, CoinCap, Coinpaprika | Paper (Binance live ready) | ✅ Data flowing |
+| **US Equities** | Yahoo Finance (stocks/ETFs), Alpha Vantage, FMP, IEX Cloud | Paper (Alpaca live ready) | ✅ Data flowing |
 
 ### Planned (Phase 4+)
 | Market | Data Sources | Execution |
@@ -152,23 +157,28 @@ It's designed for a **single operator** who wants full control over their tradin
 
 ## 🎯 Success Metrics
 
-| Metric | Target | Current |
-|--------|--------|---------|
-| Services running | 9/9 | 9/9 ✅ |
-| Paper trades executed | 100+ | 0 |
-| Live trades executed | 10+ | 0 |
-| Strategy win rate (paper) | > 55% | Not measured |
-| Max drawdown (paper) | < 10% | Not measured |
-| System uptime | > 99% | Running (dev) |
-| Pipeline latency | < 5s | Not measured |
-| Data freshness | < 5 min | Manual only |
+| Metric | Target | Current | Status |
+|--------|--------|---------|--------|
+| Services running | 10/10 | 10/10 | ✅ All healthy |
+| Data sources connected | 9+ | 9 | ✅ All tested |
+| Market candles loaded | 100+ | 84 (BTC + ETH) | ✅ Live |
+| Paper trades executed | 100+ | 0 | 🔄 Next phase |
+| Live trades executed | 10+ | 0 | 🔲 Phase 4 |
+| Strategy win rate (paper) | > 55% | Not measured | 🔲 Pending |
+| Max drawdown (paper) | < 10% | Not measured | 🔲 Pending |
+| System uptime | > 99% | Running (dev) | ⚠️ Dev stage |
+| Pipeline latency | < 5s | Not measured | 🔲 Pending |
+| Data freshness | < 5 min | Manual only | 🔄 Next phase |
 
 ---
 
 ## 🧭 Design Decisions
 
 ### Why Microservices?
-Each trading concern (data, strategy, risk, execution) has different scaling needs and failure modes. A strategy bug shouldn't take down execution. A data source outage shouldn't stop risk checks.
+Each trading concern (data, strategy, risk, execution) has different scaling needs and failure modes. A strategy bug shouldn't take down execution. A data source outage shouldn't stop risk checks. Each service has its own admin UI embedded—no need for unnecessary frontend tabs.
+
+### Why Self-Contained Service UIs?
+Data Ingestion, Config, and other services each have their own collapsible control panels accessible from the service detail page. This keeps the architecture clean: the orchestrator is your navigation hub (React Flow DAG), and each service page shows operational controls (load data, trigger ingestion, test connectivity) without cluttering the main sidebar.
 
 ### Why Local AI?
 Hosted LLMs have latency, cost, and privacy concerns. For trading, having a local FinBERT for sentiment and a local GGUF model for analysis means zero API costs for routine operations. Hosted models (Claude, GPT-4o) are used for high-stakes multi-agent voting where quality matters most.

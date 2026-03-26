@@ -10,6 +10,7 @@ import {
 import { getService, ServiceConfig } from "@/lib/service-registry";
 import Link from "next/link";
 import ServiceInfoCard from "@/components/portal/ServiceInfoCard";
+import DataIngestionControls from "@/components/portal/services/DataIngestionControls";
 
 interface ServiceDetailViewProps {
   serviceId: string;
@@ -111,6 +112,11 @@ export const ServiceDetailView: React.FC<ServiceDetailViewProps> = ({ serviceId 
 
       {/* Service Information Card */}
       <ServiceInfoCard serviceId={serviceId} />
+
+      {/* Service-Specific Controls */}
+      {serviceId === "data_ingestion" && (
+        <DataIngestionControls servicePort={service.port} />
+      )}
 
       {/* Health Status Section */}
       <div>

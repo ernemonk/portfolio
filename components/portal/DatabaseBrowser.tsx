@@ -25,7 +25,11 @@ interface TableData {
   data: Record<string, any>[];
 }
 
-export default function DatabaseBrowser() {
+interface DatabaseBrowserProps {
+  baseUrl?: string; // Optional: defaults to config service (3007), can be set to data_ingestion (3009)
+}
+
+export default function DatabaseBrowser({ baseUrl = "http://localhost:3007" }: DatabaseBrowserProps) {
   const [tables, setTables] = useState<TableInfo[]>([]);
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const [schema, setSchema] = useState<ColumnInfo[]>([]);
