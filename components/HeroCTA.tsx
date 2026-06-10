@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Download } from "lucide-react";
 
 interface Props {
   cta1Label: string;
@@ -28,18 +29,22 @@ export default function HeroCTA({
         </span>
       </Link>
 
-      {/* Work With Me — low-contrast ghost */}
+      {/* Work With Me — bordered ghost action */}
       <Link href={cta2Href} className="btn-cta-ghost px-5 py-4 text-base">
         {cta2Label}
       </Link>
 
-      {/* View Resume — text button with a quiet file tag */}
+      {/* View Resume — text button with a download cue and a quiet file tag */}
       <Link
         href={resumeHref}
-        className="btn-cta-ghost group gap-2 px-5 py-4 text-base"
+        className="btn-cta-ghost group px-5 py-4 text-base"
       >
+        <Download
+          aria-hidden
+          className="h-4 w-4 text-neutral-400 transition-colors duration-200 group-hover:text-white"
+        />
         View Resume
-        <span className="font-mono text-[10px] uppercase tracking-wider text-neutral-600 transition-colors duration-200 group-hover:text-primary-400">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-neutral-500 transition-colors duration-200 group-hover:text-primary-400">
           PDF
         </span>
       </Link>

@@ -141,31 +141,57 @@ a:focus-visible {
 /* Primary CTA — snappy lift with a tight indigo glow.
    Anchor-level specificity (a.…) is required to beat the global a:hover
    color rule, which would otherwise tint the label the same indigo as the
-   hover background and make it disappear. */
+   hover background and make it disappear.
+   Background is a deepened lavender→indigo gradient (vs. flat primary-500)
+   so crisp white, bold text clears WCAG AA contrast across the whole fill. */
 .btn-cta-primary {
-  @apply inline-flex items-center justify-center rounded-lg bg-primary-500 font-semibold;
-  color: #fff;
+  @apply inline-flex items-center justify-center rounded-lg font-bold text-white;
+  background: linear-gradient(90deg, #7c3aed 0%, #4f46e5 100%);
   transition: all 0.2s var(--ease-snappy);
 }
 
 a.btn-cta-primary:hover {
-  background: var(--accent);
+  background: linear-gradient(90deg, #6d28d9 0%, #4338ca 100%);
   color: #fff;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15),
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25),
     0 0 0 1px rgba(99, 102, 241, 0.15);
 }
 
-/* Secondary / tertiary — low-contrast ghost-text, same snappy feel */
+/* Secondary / tertiary — quiet but clearly clickable: a faint ghost border
+   marks the hit area, an underline slides in and the border brightens on
+   hover/focus so these read as actions without competing with the primary CTA. */
 .btn-cta-ghost {
-  @apply inline-flex items-center justify-center rounded-lg font-medium;
-  color: theme("colors.neutral.400");
+  @apply relative inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 font-medium;
+  color: theme("colors.neutral.300");
   transition: all 0.2s var(--ease-snappy);
 }
 
-a.btn-cta-ghost:hover {
+.btn-cta-ghost::after {
+  content: "";
+  position: absolute;
+  left: 1.25rem;
+  right: 1.25rem;
+  bottom: 0.65rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.5;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s var(--ease-snappy);
+}
+
+a.btn-cta-ghost:hover,
+a.btn-cta-ghost:focus-visible {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text-crisp);
   transform: translateY(-2px);
+}
+
+a.btn-cta-ghost:hover::after,
+a.btn-cta-ghost:focus-visible::after {
+  transform: scaleX(1);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────

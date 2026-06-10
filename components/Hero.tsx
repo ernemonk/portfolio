@@ -55,7 +55,7 @@ export default function Hero({ data }: Props) {
 
         {/* Subheading */}
         <p
-          className="mb-8 max-w-2xl text-lg leading-relaxed text-neutral-400 md:text-2xl animate-fade-up"
+          className="mb-8 max-w-2xl text-lg leading-relaxed text-neutral-300 md:text-2xl animate-fade-up"
           style={{ animationDelay: "160ms" }}
         >
           {data.subtext}
@@ -77,7 +77,7 @@ export default function Hero({ data }: Props) {
                     {m.value}{" "}
                   </span>
                 )}
-                <span className="text-neutral-500">{m.label}</span>
+                <span className="text-neutral-400">{m.label}</span>
               </span>
             </div>
           ))}

@@ -38,7 +38,7 @@ function LocalTime() {
   }, []);
 
   return (
-    <span className="font-mono text-[12px] font-medium tracking-wider text-neutral-400 tabular-nums">
+    <span className="font-mono text-[12px] font-medium tracking-wider text-neutral-300 tabular-nums">
       SF {time ?? "--:--"}
     </span>
   );
