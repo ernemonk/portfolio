@@ -9,6 +9,21 @@ interface Props {
   resumeHref?: string;
 }
 
+/* Old multi-page routes now live as sections on the single landing page —
+   rewrite known route paths to their in-page anchors. */
+const ROUTE_TO_ANCHOR: Record<string, string> = {
+  "/": "#top",
+  "/about": "#about",
+  "/work": "#work",
+  "/contact": "#contact",
+  "#selected-work": "#work",
+};
+
+function toAnchor(href: string): string {
+  const path = href.replace(/\/$/, "") || "/";
+  return ROUTE_TO_ANCHOR[path] ?? href;
+}
+
 export default function HeroCTA({
   cta1Label,
   cta1Href,
@@ -19,20 +34,20 @@ export default function HeroCTA({
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-4">
       {/* View Work — clear primary */}
-      <Link
-        href={cta1Href}
+      <a
+        href={toAnchor(cta1Href)}
         className="btn-cta-primary group px-8 py-4 text-base"
       >
         {cta1Label}
         <span className="ml-2 transition-transform duration-200 group-hover:translate-x-1">
           →
         </span>
-      </Link>
+      </a>
 
       {/* Work With Me — bordered ghost action */}
-      <Link href={cta2Href} className="btn-cta-ghost px-5 py-4 text-base">
+      <a href={toAnchor(cta2Href)} className="btn-cta-ghost px-5 py-4 text-base">
         {cta2Label}
-      </Link>
+      </a>
 
       {/* View Resume — text button with a download cue and a quiet file tag */}
       <Link
@@ -44,13 +59,13 @@ export default function HeroCTA({
           className="h-4 w-4 text-neutral-400 transition-colors duration-200 group-hover:text-white"
         />
         View Resume
-        <span className="font-mono text-[10px] uppercase tracking-wider text-neutral-500 transition-colors duration-200 group-hover:text-primary-400">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-neutral-100 transition-colors duration-200 group-hover:text-primary-400">
           PDF
         </span>
       </Link>
 
       {/* Live availability — quiet proof, sits at the end of the row */}
-      <span className="ml-1 hidden items-center gap-2 font-mono text-[11px] tracking-wide text-neutral-500 sm:flex">
+      <span className="ml-1 hidden items-center gap-2 font-mono text-[11px] tracking-wide text-neutral-100 sm:flex">
         <span className="relative flex h-1.5 w-1.5">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
           <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />

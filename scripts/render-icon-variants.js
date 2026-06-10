@@ -5,17 +5,17 @@ const path = require("path");
 const variants = {
   // A — refined EM. monogram
   emDot: `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0.5" y="0.5" width="63" height="63" rx="14" fill="#0B0B0E"/>
+    <rect x="0.5" y="0.5" width="63" height="63" rx="14" fill="#070B14"/>
     <rect x="0.5" y="0.5" width="63" height="63" rx="14" stroke="#FFFFFF" stroke-opacity="0.08"/>
-    <text x="28" y="43" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="27" font-weight="700" letter-spacing="-1" fill="#F5F5F7">EM</text>
-    <circle cx="51" cy="41.5" r="3.6" fill="#4F6BFF"/>
+    <text x="28" y="43" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="27" font-weight="700" letter-spacing="-1" fill="#F8FAFC">EM</text>
+    <circle cx="51" cy="41.5" r="3.6" fill="#6366F1"/>
   </svg>`,
   // B — single E. mark
   eDot: `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0.5" y="0.5" width="63" height="63" rx="14" fill="#0B0B0E"/>
+    <rect x="0.5" y="0.5" width="63" height="63" rx="14" fill="#070B14"/>
     <rect x="0.5" y="0.5" width="63" height="63" rx="14" stroke="#FFFFFF" stroke-opacity="0.08"/>
-    <text x="22" y="45" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="36" font-weight="700" fill="#F5F5F7">E</text>
-    <circle cx="44" cy="42" r="5" fill="#4F6BFF"/>
+    <text x="22" y="45" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="36" font-weight="700" fill="#F8FAFC">E</text>
+    <circle cx="44" cy="42" r="5" fill="#6366F1"/>
   </svg>`,
 };
 

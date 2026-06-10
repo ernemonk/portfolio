@@ -42,7 +42,7 @@ export default function SelectedWork({ items = [] }: Props) {
       <div className="gradient-line mb-12" />
 
       {/* Section label */}
-      <p className="text-xs text-neutral-500 font-mono uppercase tracking-[0.3em] mb-12 animate-fade-up">
+      <p className="text-xs text-neutral-100 font-mono uppercase tracking-[0.3em] mb-12 animate-fade-up">
         Selected Work
       </p>
 
@@ -85,7 +85,7 @@ export default function SelectedWork({ items = [] }: Props) {
 
                     {/* Role */}
                     {item.role && (
-                      <p className="text-[11px] text-neutral-500 font-mono uppercase tracking-wider mb-3">
+                      <p className="text-[11px] text-neutral-100 font-mono uppercase tracking-wider mb-3">
                         {item.role}
                       </p>
                     )}
@@ -120,7 +120,7 @@ export default function SelectedWork({ items = [] }: Props) {
                         {item.techStack.slice(0, 5).map((t) => (
                           <span
                             key={t}
-                            className="text-[9px] text-neutral-500 font-mono uppercase tracking-widest bg-neutral-800 px-2 py-0.5 rounded-full"
+                            className="text-[9px] text-neutral-100 font-mono uppercase tracking-widest bg-neutral-800 px-2 py-0.5 rounded-full"
                           >
                             {t}
                           </span>

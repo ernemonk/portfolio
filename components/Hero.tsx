@@ -21,7 +21,7 @@ export default function Hero({ data }: Props) {
   const lastName = rest.join(" ");
 
   return (
-    <section className="relative flex min-h-[82vh] flex-col justify-center overflow-hidden pt-16">
+    <section id="top" className="relative flex min-h-[82vh] flex-col justify-center overflow-hidden pt-16 scroll-mt-24">
       {/* Background pattern */}
       <div className="absolute inset-0 dot-grid opacity-30" />
 

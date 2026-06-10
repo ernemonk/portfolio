@@ -454,7 +454,7 @@ Neutrals:
 - text-neutral-50: #f9fafb
 - text-neutral-100: #f3f4f6
 - text-neutral-400: #9ca3af
-- text-neutral-500: #6b7280
+- text-neutral-100: #6b7280
 ```
 
 #### Accent System (Primary)
@@ -596,7 +596,7 @@ Secondary Button:
 - Border: border border-neutral-700
 - Text: text-neutral-50
 - Focus: border-primary-400 ring-primary-400/10
-- Placeholder: text-neutral-500
+- Placeholder: text-neutral-100
 - Padding: px-4 py-3
 ```
 
@@ -608,7 +608,7 @@ Headings:
 - Margin-bottom: varies by size (h1: mb-8, h2: mb-6, h3: mb-4)
 
 Body:
-- Color: text-neutral-300 (primary), text-neutral-500 (secondary)
+- Color: text-neutral-300 (primary), text-neutral-100 (secondary)
 - Line-height: leading-relaxed
 ```
 

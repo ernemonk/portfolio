@@ -1,28 +1,24 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 const links = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-  { href: "/work", label: "Work" },
-  { href: "/resume", label: "Resume" },
-  { href: "/contact", label: "Contact" },
+  { href: "#top", label: "Home" },
+  { href: "#about", label: "About" },
+  { href: "#work", label: "Work" },
+  { href: "#contact", label: "Contact" },
 ];
 
-function isActive(pathname: string, href: string) {
-  if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
+const sectionIds = links.map((l) => l.href.slice(1));
 
 /* ── Live San Francisco time capsule ──────────────────────────────────── */
 function LocalTime() {
   const [time, setTime] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const update = () =>
       setTime(
         new Intl.DateTimeFormat("en-US", {
@@ -37,6 +33,8 @@ function LocalTime() {
     return () => clearInterval(id);
   }, []);
 
+  if (!mounted) return <span className="font-mono text-[12px] font-medium tracking-wider text-neutral-300 tabular-nums">SF --:--</span>;
+
   return (
     <span className="font-mono text-[12px] font-medium tracking-wider text-neutral-300 tabular-nums">
       SF {time ?? "--:--"}
@@ -45,32 +43,60 @@ function LocalTime() {
 }
 
 export default function Nav() {
-  const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("top");
+  const [mounted, setMounted] = useState(false);
 
-  // Close the mobile drawer whenever the route changes.
+  // Scroll-spy: highlight the nav link for the section currently in view.
   useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+    setMounted(true);
+
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: "-45% 0px -50% 0px", threshold: 0 }
+    );
+
+    sections.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  // Close drawer on route/scroll
+  useEffect(() => {
+    if (open) {
+      setOpen(false);
+    }
+  }, [activeSection]);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/[0.03] bg-neutral-950/60 backdrop-blur-xl transition-all duration-300">
       <div className="container-max flex h-16 items-center justify-between px-6">
         {/* Logo */}
-        <Link
-          href="/"
+        <a
+          href="#top"
           aria-label="Ernesto Monge — home"
           className="text-sm font-medium tracking-tight text-neutral-50 transition-opacity duration-300 hover:opacity-80"
         >
           EM<span className="text-primary-400">.</span>
-        </Link>
+        </a>
 
         {/* Center navigation — quiet, spaced, with a single active dot */}
         <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium tracking-wide">
           {links.map((l) => {
-            const active = isActive(pathname, l.href);
+            const active = mounted && activeSection === l.href.slice(1);
             return (
-              <Link
+              <a
                 key={l.href}
                 href={l.href}
                 aria-current={active ? "page" : undefined}
@@ -86,7 +112,7 @@ export default function Nav() {
                     transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 )}
-              </Link>
+              </a>
             );
           })}
         </nav>
@@ -111,9 +137,9 @@ export default function Nav() {
       {open && (
         <div className="md:hidden border-t border-white/[0.03] bg-neutral-950/80 backdrop-blur-xl px-6 py-2">
           {links.map((l) => {
-            const active = isActive(pathname, l.href);
+            const active = mounted && activeSection === l.href.slice(1);
             return (
-              <Link
+              <a
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
@@ -124,7 +150,7 @@ export default function Nav() {
               >
                 {active && <span className="h-1 w-1 rounded-full bg-primary-400" />}
                 {l.label}
-              </Link>
+              </a>
             );
           })}
         </div>

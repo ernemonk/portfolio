@@ -12,11 +12,13 @@ export default function CapabilityBlocks({ data }: Props) {
   if (!data?.blocks?.length) return null;
 
   return (
-    <section className="container-max px-6 py-28 relative">
-      {/* Section label */}
-      <p className="text-xs text-neutral-500 font-mono uppercase tracking-[0.3em] mb-12 animate-fade-up">
-        What I Do
-      </p>
+    <section id="capabilities" className="container-max px-6 py-28 relative isolate overflow-hidden scroll-mt-24 section-glow-tr">
+      {/* Section header */}
+      <div className="mb-12 animate-fade-up">
+        <h2 className="text-3xl md:text-5xl font-bold text-neutral-50 tracking-tight">
+          What I Do
+        </h2>
+      </div>
 
       {/* Cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger">

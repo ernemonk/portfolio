@@ -20,11 +20,11 @@ const ArrowIcon = (
 );
 
 const commands: Command[] = [
-  { id: "home", label: "Home", hint: "/", keywords: "start landing", group: "Navigate", run: (r) => r.push("/") },
-  { id: "about", label: "About", hint: "/about", keywords: "bio story", group: "Navigate", run: (r) => r.push("/about") },
-  { id: "work", label: "Work", hint: "/work", keywords: "projects portfolio case studies", group: "Navigate", run: (r) => r.push("/work") },
+  { id: "home", label: "Home", hint: "/", keywords: "start landing", group: "Navigate", run: (r) => r.push("/#top") },
+  { id: "about", label: "About", hint: "/#about", keywords: "bio story", group: "Navigate", run: (r) => r.push("/#about") },
+  { id: "work", label: "Work", hint: "/#work", keywords: "projects portfolio case studies", group: "Navigate", run: (r) => r.push("/#work") },
   { id: "resume", label: "Resume", hint: "/resume", keywords: "cv experience", group: "Navigate", run: (r) => r.push("/resume") },
-  { id: "contact", label: "Contact", hint: "/contact", keywords: "email reach out hire", group: "Navigate", run: (r) => r.push("/contact") },
+  { id: "contact", label: "Contact", hint: "/#contact", keywords: "email reach out hire", group: "Navigate", run: (r) => r.push("/#contact") },
   {
     id: "github",
     label: "GitHub",
@@ -184,7 +184,7 @@ export default function CommandPalette() {
           >
             {/* Search input */}
             <div className="flex items-center gap-3 border-b border-white/[0.06] px-4">
-              <svg className="w-4 h-4 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <svg className="w-4 h-4 text-neutral-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m1.35-5.4a6.75 6.75 0 11-13.5 0 6.75 6.75 0 0113.5 0z" />
               </svg>
               <input
@@ -197,7 +197,7 @@ export default function CommandPalette() {
                 style={{ background: "transparent" }}
                 aria-label="Search commands"
               />
-              <kbd className="hidden sm:block rounded border border-white/[0.08] bg-white/[0.03] px-1.5 py-0.5 font-mono text-[10px] text-neutral-500">
+              <kbd className="hidden sm:block rounded border border-white/[0.08] bg-white/[0.03] px-1.5 py-0.5 font-mono text-[10px] text-neutral-100">
                 ESC
               </kbd>
             </div>
@@ -205,7 +205,7 @@ export default function CommandPalette() {
             {/* Results */}
             <div ref={listRef} className="max-h-[min(60vh,360px)] overflow-y-auto py-2">
               {groups.length === 0 && (
-                <p className="px-4 py-8 text-center text-sm text-neutral-500">No results for &ldquo;{query}&rdquo;</p>
+                <p className="px-4 py-8 text-center text-sm text-neutral-100">No results for &ldquo;{query}&rdquo;</p>
               )}
               {groups.map(({ group, items }) => (
                 <div key={group} className="px-2 pb-1">
@@ -229,7 +229,7 @@ export default function CommandPalette() {
                             className={`flex h-6 w-6 items-center justify-center rounded-md border text-[11px] ${
                               isActive
                                 ? "border-primary-400/40 bg-primary-500/15 text-primary-300"
-                                : "border-white/[0.06] bg-white/[0.02] text-neutral-500"
+                                : "border-white/[0.06] bg-white/[0.02] text-neutral-100"
                             }`}
                           >
                             {ArrowIcon}

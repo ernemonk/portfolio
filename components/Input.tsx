@@ -33,7 +33,7 @@ export function Input({
         <p className="text-xs text-error-400 mt-1">{error}</p>
       )}
       {helperText && !error && (
-        <p className="text-xs text-neutral-500 mt-1">{helperText}</p>
+        <p className="text-xs text-neutral-100 mt-1">{helperText}</p>
       )}
     </div>
   );
@@ -73,7 +73,7 @@ export function Textarea({
         <p className="text-xs text-error-400 mt-1">{error}</p>
       )}
       {helperText && !error && (
-        <p className="text-xs text-neutral-500 mt-1">{helperText}</p>
+        <p className="text-xs text-neutral-100 mt-1">{helperText}</p>
       )}
     </div>
   );

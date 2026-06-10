@@ -8,7 +8,7 @@ San Francisco Bay Area · 📧 erne.monge.s@gmail.com · 🔗 [LinkedIn](https:/
 
 ## Professional Summary
 
-**Senior Full-Stack Systems Architect with 6+ years of experience spanning two rarely overlapping domains: enterprise financial platforms and embedded hardware systems.** I lead the design and modernization of high-scale, regulated financial systems and have also built production IoT solutions from the PCB level up through cloud and mobile applications.
+**Senior Full-Stack Systems Architect with 10+ years of experience spanning two rarely overlapping domains: enterprise financial platforms and embedded hardware systems.** I lead the design and modernization of high-scale, regulated financial systems and have also built production IoT solutions from the PCB level up through cloud and mobile applications.
 
 On the software side, I currently lead a team that is modernizing of a **$160B+ AUM advisor platform at AssetMark**, and have architected regulated data migration systems at **JPMorgan Chase** during a major bank acquisition, as well as treasury platforms at **First Republic Bank**. My core stack includes **C# ASP.NET Core, Python (FastAPI), gRPC microservices, and React.js**, with a focus on **data integrity, fault tolerance, and high-availability distributed systems**.
 

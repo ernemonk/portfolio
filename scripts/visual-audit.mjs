@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BASE_URL = process.argv[2] || "http://localhost:3000";
-const OUT_DIR = path.join(__dirname, "..", "audit-output");
+const OUT_DIR = path.join(__dirname, "..", "ui-audit-output");
 const SHOTS_DIR = path.join(OUT_DIR, "screenshots");
 
 // Routes that are auth-gated and just bounce to /portal/login — skip them

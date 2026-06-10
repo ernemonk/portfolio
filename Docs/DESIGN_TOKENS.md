@@ -51,7 +51,7 @@ Semantic Colors
 className="text-neutral-50"      // primary text (lightest)
 className="text-neutral-100"     // secondary text
 className="text-neutral-400"     // muted text
-className="text-neutral-500"     // disabled text
+className="text-neutral-100"     // disabled text
 
 // Backgrounds
 className="bg-neutral-950"       // page background
@@ -119,7 +119,7 @@ className="text-base text-neutral-300 leading-relaxed"
 className="text-lg text-neutral-400"
 
 // Small text
-className="text-sm text-neutral-500"
+className="text-sm text-neutral-100"
 
 // Labels/captions
 className="text-xs text-neutral-600 font-mono uppercase"
@@ -403,7 +403,7 @@ className="rounded-full"    // pill shape
 
 ```tsx
 <section className="container-max px-6 py-28">
-  <p className="text-xs text-neutral-500 font-mono uppercase tracking-[0.3em] mb-12">
+  <p className="text-xs text-neutral-100 font-mono uppercase tracking-[0.3em] mb-12">
     Section Label
   </p>
   {/* Content */}

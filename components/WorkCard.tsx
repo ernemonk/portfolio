@@ -33,7 +33,7 @@ export default function WorkCard({ item }: { item: WorkItem }) {
             className="h-9 w-auto object-contain rounded"
           />
         ) : (
-          <div className="h-9 w-9 rounded-xl bg-primary-500/10 border border-neutral-800 flex items-center justify-center text-neutral-500 font-bold text-sm">
+          <div className="h-9 w-9 rounded-xl bg-primary-500/10 border border-neutral-800 flex items-center justify-center text-neutral-100 font-bold text-sm">
             {item.name?.[0] ?? "?"}
           </div>
         )}
@@ -108,13 +108,13 @@ export default function WorkCard({ item }: { item: WorkItem }) {
             {item.techStack.slice(0, 6).map((t) => (
               <span
                 key={t}
-                className="text-[9px] text-neutral-500 font-mono uppercase tracking-widest bg-neutral-800 px-2 py-0.5 rounded-full"
+                className="text-[9px] text-neutral-100 font-mono uppercase tracking-widest bg-neutral-800 px-2 py-0.5 rounded-full"
               >
                 {t}
               </span>
             ))}
             {item.techStack.length > 6 && (
-              <span className="text-[9px] text-neutral-500 font-mono self-center">
+              <span className="text-[9px] text-neutral-100 font-mono self-center">
                 +{item.techStack.length - 6}
               </span>
             )}

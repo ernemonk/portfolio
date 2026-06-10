@@ -1,11 +1,9 @@
-import Link from "next/link";
-
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   const footerLinks = [
-    { href: "/work", label: "Work" },
-    { href: "/contact", label: "Contact" },
+    { href: "#work", label: "Work" },
+    { href: "#contact", label: "Contact" },
   ];
 
   const socialLinks = [
@@ -48,11 +46,11 @@ export default function Footer() {
               <span className="text-neutral-50 font-semibold text-lg tracking-tight">
                 EM<span className="text-primary-400">.</span>
               </span>
-              <span className="text-neutral-500 text-xs font-medium">
+              <span className="text-neutral-100 text-xs font-medium">
                 © {currentYear}
               </span>
             </div>
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-neutral-100">
               Lead Full Stack Engineer. Building enterprise systems & real products.
             </p>
           </div>
@@ -62,13 +60,13 @@ export default function Footer() {
             {/* Navigation Links */}
             <div className="flex gap-8">
               {footerLinks.map((link) => (
-                <Link
+                <a
                   key={link.href}
                   href={link.href}
                   className="text-sm text-neutral-400 hover:text-primary-400 transition-colors duration-300 font-medium"
                 >
                   {link.label}
-                </Link>
+                </a>
               ))}
             </div>
 

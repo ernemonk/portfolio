@@ -41,7 +41,7 @@ export function WorkGrid({ items }: { items: WorkItem[] }) {
             className={`px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-300 ${
               typeFilter === f.value
                 ? "bg-primary-500/10 text-primary-400 border border-primary-500/20 tab-active"
-                : "text-neutral-500 border border-neutral-800 hover:border-neutral-600 hover:text-neutral-300"
+                : "text-neutral-100 border border-neutral-800 hover:border-neutral-600 hover:text-neutral-300"
             }`}
           >
             {f.label}

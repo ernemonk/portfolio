@@ -9,10 +9,12 @@ export default function CurrentFocus({ data }: Props) {
 
   return (
     <section className="max-w-6xl mx-auto px-6 py-28">
-      <div className="gradient-line mb-28" />
-      <h2 className="text-xs text-neutral-500 font-mono uppercase tracking-[0.3em] mb-10 animate-fade-up">
-        {data.title}
-      </h2>
+      <div className="gradient-line mb-12" />
+      <div className="mb-10 animate-fade-up">
+        <h2 className="text-3xl md:text-5xl font-bold text-neutral-50 tracking-tight">
+          {data.title}
+        </h2>
+      </div>
       <ul className="space-y-5 stagger">
         {data.items.map((item, i) => (
           <li key={i} className="flex items-start gap-4 animate-fade-up">

@@ -138,6 +138,35 @@ a:focus-visible {
   );
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   SECTION GLOWS (scroll rhythm)
+   Subtle ambient blobs that alternate sides down the single-page scroll,
+   breaking up the otherwise-flat neutral-950 background between sections.
+   Sections using these need `relative overflow-hidden`.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.section-glow-tr::before,
+.section-glow-tl::before {
+  content: "";
+  position: absolute;
+  top: -120px;
+  width: 560px;
+  height: 560px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.07), transparent 70%);
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: -10;
+}
+
+.section-glow-tr::before {
+  right: -160px;
+}
+
+.section-glow-tl::before {
+  left: -160px;
+}
+
 /* Primary CTA — snappy lift with a tight indigo glow.
    Anchor-level specificity (a.…) is required to beat the global a:hover
    color rule, which would otherwise tint the label the same indigo as the
@@ -327,7 +356,7 @@ a.btn-cta-ghost:focus-visible::after {
 }
 
 .input-base::placeholder {
-  @apply text-neutral-500;
+  @apply text-neutral-100;
 }
 
 input[type="text"],
@@ -383,7 +412,7 @@ p {
 }
 
 .text-muted {
-  @apply text-neutral-500;
+  @apply text-neutral-100;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────

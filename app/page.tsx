@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import Hero from "@/components/Hero";
 import CapabilityBlocks from "@/components/CapabilityBlocks";
-import SelectedWork from "@/components/SelectedWork";
+import AboutSection from "@/components/AboutSection";
+import WorkSection from "@/components/WorkSection";
 import MetricsBar from "@/components/MetricsBar";
 import CurrentFocus from "@/components/CurrentFocus";
+import ContactSection from "@/components/ContactSection";
 import {
   fetchHeroSection,
   fetchCapabilities,
   fetchWorkItems,
   fetchSiteMetrics,
   fetchCurrentFocus,
+  fetchOwnerBio,
 } from "@/lib/firestore/server";
 
 export const metadata: Metadata = {
@@ -31,23 +34,24 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [hero, capabilities, workItems, metrics, focus] = await Promise.all([
+  const [hero, capabilities, workItems, metrics, focus, bio] = await Promise.all([
     fetchHeroSection(),
     fetchCapabilities(),
     fetchWorkItems(),
     fetchSiteMetrics(),
     fetchCurrentFocus(),
+    fetchOwnerBio(),
   ]);
-
-  const featured = (workItems ?? []).filter((w) => w.featured);
 
   return (
     <>
       <Hero data={hero} />
       <CapabilityBlocks data={capabilities} />
-      <SelectedWork items={featured} />
+      <AboutSection bio={bio} />
+      <WorkSection items={workItems ?? []} />
       <MetricsBar metrics={metrics ?? []} />
       <CurrentFocus data={focus} />
+      <ContactSection />
     </>
   );
 }

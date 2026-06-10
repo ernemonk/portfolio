@@ -238,7 +238,7 @@ import { Badge } from "@/components/Badge";
 ```css
 /* Semantic Use */
 .text-neutral-400    /* Body text */
-.text-neutral-500    /* Secondary text */
+.text-neutral-100    /* Secondary text */
 .bg-neutral-900      /* Cards, surfaces */
 .bg-neutral-950      /* Page background */
 .border-neutral-800  /* Subtle borders */
