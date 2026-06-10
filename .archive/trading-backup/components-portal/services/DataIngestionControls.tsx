@@ -162,8 +162,14 @@ export const DataIngestionControls: React.FC<DataIngestionControlsProps> = ({ se
       const res = await fetch(`${baseUrl}/data/tracked-symbols`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setTrackedSymbols(data.symbols || []);
-    } catch {
+      // Map the fetched symbols and add last_updated timestamp
+      const symbols = (data.symbols || []).map((sym: any) => ({
+        ...sym,
+        last_updated: sym.latest_date || new Date().toISOString()
+      }));
+      setTrackedSymbols(symbols);
+    } catch (err) {
+      console.error('Error fetching tracked symbols:', err);
       // May not exist yet
       setTrackedSymbols([]);
     } finally {

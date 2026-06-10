@@ -147,10 +147,10 @@ export const ServiceStatusCard: React.FC<ServiceStatusCardProps> = ({
 
         {/* Footer */}
         <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
-          <span className="text-xs text-white/30 group-hover:text-white/40">
+          <span className="text-xs text-white/70 group-hover:text-white/90">
             {service.category}
           </span>
-          <span className="text-xs text-white/30 group-hover:text-white/40 transition-transform group-hover:translate-x-1">
+          <span className="text-xs text-white/70 group-hover:text-white/90 transition-transform group-hover:translate-x-1">
             →
           </span>
         </div>
