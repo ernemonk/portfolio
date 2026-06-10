@@ -248,7 +248,9 @@ async function main() {
   const report = { baseURL: BASE_URL, generatedAt: new Date().toISOString(), pages: [] };
 
   const visited = new Set();
-  const queue = ["/"];
+  // Seed with known routes (in addition to whatever the crawl discovers)
+  // so pages only linked from the footer/secondary nav aren't missed.
+  const queue = ["/", "/about", "/work", "/resume", "/contact", "/privacy", "/portal/login"];
 
   while (queue.length) {
     const routePath = queue.shift();

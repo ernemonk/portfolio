@@ -1,6 +1,6 @@
 {
   "baseURL": "http://localhost:3000",
-  "generatedAt": "2026-06-10T03:42:42.304Z",
+  "generatedAt": "2026-06-10T05:33:33.884Z",
   "pages": [
     {
       "route": "/",
@@ -19,8 +19,7 @@
         "/contact/",
         "/resume/",
         "/work/",
-        "/contact/",
-        "/privacy/"
+        "/contact/"
       ]
     },
     {
@@ -38,8 +37,7 @@
         "/resume/",
         "/contact/",
         "/work/",
-        "/contact/",
-        "/privacy/"
+        "/contact/"
       ]
     },
     {
@@ -57,8 +55,7 @@
         "/resume/",
         "/contact/",
         "/work/",
-        "/contact/",
-        "/privacy/"
+        "/contact/"
       ]
     },
     {
@@ -70,7 +67,7 @@
       "clsEntries": [
         {
           "value": 0.0005970652220507544,
-          "time": 830.8999999994412,
+          "time": 994.3000000007451,
           "sources": [
             "#text",
             "BUTTON",
@@ -79,7 +76,7 @@
         },
         {
           "value": 0.013308051215277778,
-          "time": 874.7999999998137,
+          "time": 1046.0999999996275,
           "sources": [
             "DIV",
             "BUTTON",
@@ -96,8 +93,7 @@
         "/contact/",
         "/",
         "/work/",
-        "/contact/",
-        "/privacy/"
+        "/contact/"
       ]
     },
     {
@@ -115,8 +111,7 @@
         "/resume/",
         "/contact/",
         "/work/",
-        "/contact/",
-        "/privacy/"
+        "/contact/"
       ]
     },
     {
@@ -134,8 +129,26 @@
         "/resume/",
         "/contact/",
         "/work/",
+        "/contact/"
+      ]
+    },
+    {
+      "route": "/portal/login",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "cls": 0,
+      "clsEntries": [],
+      "discoveredLinks": [
+        "/",
+        "/",
+        "/about/",
+        "/work/",
+        "/resume/",
         "/contact/",
-        "/privacy/"
+        "/portal/signup/",
+        "/work/",
+        "/contact/"
       ]
     }
   ]
