@@ -69,10 +69,7 @@ export default function Footer() {
           {/* Divider */}
           <div className="gradient-line" />
 
-          {/* Legal */}
-          <div className="text-xs text-neutral-600 space-y-1">
-            <p>Designed & built by Ernesto Monge. Built with Next.js, Tailwind CSS, and Firebase.</p>
-          </div>
+
         </div>
       </div>
     </footer>
