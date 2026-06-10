@@ -9,9 +9,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Graphite neutral scale ("Graphite & Cobalt")
+        // Blue-tinted slate neutral scale (deep end shifted to navy for depth)
         neutral: {
-          50: "#F5F5F7",
+          50: "#F8FAFC",
           100: "#E8E8EC",
           200: "#D4D4DA",
           300: "#B8B8C2",
@@ -19,17 +19,17 @@ const config: Config = {
           500: "#5C5C68",
           600: "#34343F",
           700: "#25252E",
-          800: "#1A1A21",
-          900: "#131318",
-          950: "#0B0B0E",
+          800: "#141B2B",
+          900: "#0C1220",
+          950: "#070B14",
         },
-        // Primary Accent (Cobalt) - the single signal color
+        // Primary Accent (Indigo #6366f1) - the single signal color
         primary: {
-          50: "#EEF1FF",
-          300: "#A3B4FF",
-          400: "#7A91FF",
-          500: "#4F6BFF",
-          600: "#3D56E6",
+          50: "#EEF2FF",
+          300: "#A5B4FC",
+          400: "#818CF8",
+          500: "#6366F1",
+          600: "#4F46E5",
         },
         // Secondary Accents (Purple) - reserved, low usage
         secondary: {
@@ -81,8 +81,8 @@ const config: Config = {
         "xl": "16px",
       },
       boxShadow: {
-        "glow-sm": "0 0 20px -5px rgba(79, 107, 255, 0.15)",
-        "glow-md": "0 0 30px -5px rgba(79, 107, 255, 0.25)",
+        "glow-sm": "0 0 20px -5px rgba(99, 102, 241, 0.15)",
+        "glow-md": "0 0 30px -5px rgba(99, 102, 241, 0.25)",
       },
       animation: {
         "fade-up": "fadeUp 0.4s ease-out both",

@@ -38,7 +38,7 @@ function LocalTime() {
   }, []);
 
   return (
-    <span className="font-mono text-[11px] tracking-wider text-neutral-500 tabular-nums">
+    <span className="font-mono text-[12px] font-medium tracking-wider text-neutral-400 tabular-nums">
       SF {time ?? "--:--"}
     </span>
   );
@@ -60,7 +60,7 @@ export default function Nav() {
         <Link
           href="/"
           aria-label="Ernesto Monge — home"
-          className="text-base font-semibold tracking-tight text-neutral-50 transition-opacity duration-300 hover:opacity-80"
+          className="text-sm font-medium tracking-tight text-neutral-50 transition-opacity duration-300 hover:opacity-80"
         >
           EM<span className="text-primary-400">.</span>
         </Link>
