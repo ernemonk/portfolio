@@ -1,6 +1,9 @@
 "use client";
+
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 const links = [
   { href: "/", label: "Home" },
@@ -10,59 +13,122 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
-export default function Nav() {
-  const [open, setOpen] = useState(false);
+function isActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+/* ── Live San Francisco time capsule ──────────────────────────────────── */
+function LocalTime() {
+  const [time, setTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    const update = () =>
+      setTime(
+        new Intl.DateTimeFormat("en-US", {
+          timeZone: "America/Los_Angeles",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }).format(new Date())
+      );
+    update();
+    const id = setInterval(update, 1000 * 30);
+    return () => clearInterval(id);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-neutral-950/80 backdrop-blur-md border-b border-neutral-800">
-      <div className="container-max px-6 h-16 flex items-center justify-between">
+    <span className="font-mono text-[11px] tracking-wider text-neutral-500 tabular-nums">
+      SF {time ?? "--:--"}
+    </span>
+  );
+}
+
+export default function Nav() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  // Close the mobile drawer whenever the route changes.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/[0.03] bg-neutral-950/60 backdrop-blur-xl transition-all duration-300">
+      <div className="container-max flex h-16 items-center justify-between px-6">
         {/* Logo */}
-        <Link 
-          href="/" 
-          className="text-neutral-50 font-bold text-lg tracking-tight hover:text-primary-400 transition-colors duration-300"
+        <Link
+          href="/"
+          aria-label="Ernesto Monge — home"
+          className="text-base font-semibold tracking-tight text-neutral-50 transition-opacity duration-300 hover:opacity-80"
         >
           EM<span className="text-primary-400">.</span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="text-sm text-neutral-400 hover:text-primary-400 transition-colors duration-300 font-medium"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </div>
+        {/* Center navigation — quiet, spaced, with a single active dot */}
+        <nav className="hidden md:flex items-center gap-8 text-[13px] font-medium tracking-wide">
+          {links.map((l) => {
+            const active = isActive(pathname, l.href);
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                aria-current={active ? "page" : undefined}
+                className={`relative py-1 transition-colors duration-300 ${
+                  active ? "text-neutral-50" : "text-neutral-400 hover:text-neutral-50"
+                }`}
+              >
+                {l.label}
+                {active && (
+                  <motion.span
+                    layoutId="nav-active-dot"
+                    className="absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary-400"
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                  />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden text-neutral-400 hover:text-primary-400 transition-colors duration-300 p-2 hover:bg-neutral-900/50 rounded-lg text-2xl"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-          aria-expanded={open}
-        >
-          {open ? "✕" : "☰"}
-        </button>
+        {/* Minimal right element */}
+        <div className="flex items-center gap-4">
+          <LocalTime />
+
+          {/* Mobile menu button */}
+          <button
+            className="md:hidden -mr-2 rounded-lg p-2 text-neutral-400 transition-colors duration-300 hover:text-neutral-50"
+            onClick={() => setOpen(!open)}
+            aria-label="Toggle menu"
+            aria-expanded={open}
+          >
+            <span className="text-xl">{open ? "✕" : "☰"}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile drawer */}
       {open && (
-        <div className="md:hidden bg-neutral-900 border-b border-neutral-800 px-6 pb-4 space-y-2">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="block py-2 text-sm text-neutral-400 hover:text-primary-400 transition-colors duration-300 font-medium"
-              onClick={() => setOpen(false)}
-            >
-              {l.label}
-            </Link>
-          ))}
+        <div className="md:hidden border-t border-white/[0.03] bg-neutral-950/80 backdrop-blur-xl px-6 py-2">
+          {links.map((l) => {
+            const active = isActive(pathname, l.href);
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                aria-current={active ? "page" : undefined}
+                className={`flex items-center gap-2 py-2.5 text-sm tracking-wide transition-colors duration-300 ${
+                  active ? "text-neutral-50" : "text-neutral-400 hover:text-neutral-50"
+                }`}
+              >
+                {active && <span className="h-1 w-1 rounded-full bg-primary-400" />}
+                {l.label}
+              </Link>
+            );
+          })}
         </div>
       )}
-    </nav>
+    </header>
   );
 }

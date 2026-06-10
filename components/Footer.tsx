@@ -45,7 +45,7 @@ export default function Footer() {
           {/* Brand & Copyright */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-neutral-50 font-bold text-lg tracking-tight">
+              <span className="text-neutral-50 font-semibold text-lg tracking-tight">
                 EM<span className="text-primary-400">.</span>
               </span>
               <span className="text-neutral-500 text-xs font-medium">

@@ -1,7 +1,6 @@
-import Link from "next/link";
 import type { HeroSection } from "@/types";
-import { Button, LinkButton } from "@/components/Button";
 import { Heading } from "@/components/Heading";
+import HeroCTA from "@/components/HeroCTA";
 
 interface Props {
   data: HeroSection | null;
@@ -49,35 +48,16 @@ export default function Hero({ data }: Props) {
         </p>
 
         {/* CTA Buttons */}
-        <div 
-          className="flex flex-wrap gap-4 animate-fade-up"
+        <div
+          className="animate-fade-up"
           style={{ animationDelay: "240ms" }}
         >
-          <LinkButton
-            href={data.cta1Href}
-            variant="primary"
-            size="lg"
-            className="group glow-hover"
-          >
-            {data.cta1Label}
-            <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
-          </LinkButton>
-
-          <LinkButton
-            href={data.cta2Href}
-            variant="secondary"
-            size="lg"
-          >
-            {data.cta2Label}
-          </LinkButton>
-
-          <LinkButton
-            href="/resume/"
-            variant="outline"
-            size="lg"
-          >
-            View Resume
-          </LinkButton>
+          <HeroCTA
+            cta1Label={data.cta1Label}
+            cta1Href={data.cta1Href}
+            cta2Label={data.cta2Label}
+            cta2Href={data.cta2Href}
+          />
         </div>
       </div>
 

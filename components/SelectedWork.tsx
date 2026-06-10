@@ -7,6 +7,13 @@ interface Props {
   items: WorkItem[];
 }
 
+/** Derive a clear, action-oriented CTA label from the destination URL. */
+function ctaLabel(url: string): string {
+  if (/apps\.apple\.com/i.test(url)) return "View on App Store";
+  if (/play\.google\.com/i.test(url)) return "View on Play Store";
+  return "Visit Site";
+}
+
 const typeLabels: Record<WorkItemType, string> = {
   venture: "Ventures & Products",
   project: "Enterprise Engineering",
@@ -66,20 +73,14 @@ export default function SelectedWork({ items = [] }: Props) {
                             href={item.website}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:text-primary-400 transition-colors duration-300 inline-flex items-center gap-1"
+                            className="group-hover:text-primary-400 transition-colors duration-300"
                           >
                             {item.name}
-                            <span className="text-neutral-500 group-hover:text-primary-400 text-xs transition-colors">↗</span>
                           </a>
                         ) : (
                           item.name
                         )}
                       </h4>
-                      {item.owned && (
-                        <Badge variant="success" className="shrink-0">
-                          Owned
-                        </Badge>
-                      )}
                     </div>
 
                     {/* Role */}
@@ -94,11 +95,23 @@ export default function SelectedWork({ items = [] }: Props) {
                       {item.description}
                     </p>
 
-                    {/* Metrics */}
+                    {/* Metrics — a highlight stat, deliberately styled to read as info, not a link */}
                     {item.metrics && (
-                      <p className="text-xs text-primary-400/80 font-mono mb-4">
-                        {item.metrics}
-                      </p>
+                      <div className="mb-4 inline-flex items-center gap-1.5 rounded-md bg-neutral-800/60 px-2.5 py-1 text-xs text-neutral-300">
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="h-3 w-3 flex-shrink-0 text-success-400/80"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <span className="font-mono">{item.metrics}</span>
+                      </div>
                     )}
 
                     {/* Tech stack pills */}
@@ -117,6 +130,23 @@ export default function SelectedWork({ items = [] }: Props) {
                             +{item.techStack.length - 5}
                           </span>
                         )}
+                      </div>
+                    )}
+
+                    {/* Primary CTA — single obvious affordance when there's somewhere to go */}
+                    {item.website && (
+                      <div className="mt-4 pt-4 border-t border-neutral-800/60">
+                        <a
+                          href={item.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-400 hover:text-primary-300 transition-colors"
+                        >
+                          {ctaLabel(item.website)}
+                          <span className="transition-transform duration-300 group-hover:translate-x-1">
+                            →
+                          </span>
+                        </a>
                       </div>
                     )}
                   </Card>

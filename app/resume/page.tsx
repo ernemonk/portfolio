@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 
 const RESUME_FILE = 'resume-master.md';
 
@@ -198,25 +197,19 @@ export default function ResumePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Header */}
-      <div className="fixed top-0 w-full bg-slate-900/95 backdrop-blur z-40 border-b border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <Link href="/" className="text-white font-bold text-lg tracking-tight hover:text-primary-400 transition">
-            EM<span className="text-primary-400">.</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-white">Resume</h1>
-          <button
-            onClick={printToPDF}
-            disabled={loading || !resumeContent}
-            className="bg-primary-600 hover:bg-primary-500 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold px-6 py-2 rounded-lg transition"
-          >
-            {loading ? 'Loading...' : 'Download PDF'}
-          </button>
-        </div>
-      </div>
-
       <div className="pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Page header — sits below the global nav, no longer fixed */}
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <h1 className="text-2xl font-bold text-white">Resume</h1>
+            <button
+              onClick={printToPDF}
+              disabled={loading || !resumeContent}
+              className="bg-primary-600 hover:bg-primary-500 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold px-6 py-2 rounded-lg transition"
+            >
+              {loading ? 'Loading...' : 'Download PDF'}
+            </button>
+          </div>
           <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8">
             <div className="max-w-4xl mx-auto">
               {loading ? (
