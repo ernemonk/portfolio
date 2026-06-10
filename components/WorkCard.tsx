@@ -6,8 +6,8 @@ const statusColors: Record<string, string> = {
   "in-development": "text-sky-400/70 bg-sky-400/5",
   building: "text-sky-400/70 bg-sky-400/5",
   scaling: "text-indigo-400/70 bg-indigo-400/5",
-  completed: "text-white/30 bg-white/[0.03]",
-  archived: "text-white/15 bg-white/[0.02]",
+  completed: "text-white/70 bg-white/[0.03]",
+  archived: "text-white/70 bg-white/[0.02]",
   research: "text-amber-400/70 bg-amber-400/5",
   exited: "text-violet-400/70 bg-violet-400/5",
 };
@@ -32,7 +32,7 @@ export default function WorkCard({ item }: { item: WorkItem }) {
         )}
         <span
           className={`text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full ${
-            statusColors[item.status] ?? "text-white/20 bg-white/[0.02]"
+            statusColors[item.status] ?? "text-white/70 bg-white/[0.02]"
           }`}
         >
           {item.status}
@@ -44,7 +44,7 @@ export default function WorkCard({ item }: { item: WorkItem }) {
         {item.website ? (
           <a href={item.website} target="_blank" rel="noopener noreferrer">
             {item.name}
-            <span className="ml-1.5 text-white/10 group-hover:text-sky-400/40 text-xs">↗</span>
+            <span className="ml-1.5 text-white/50 group-hover:text-sky-400 text-xs">↗</span>
           </a>
         ) : (
           item.name
@@ -54,25 +54,25 @@ export default function WorkCard({ item }: { item: WorkItem }) {
       {/* Role + type badge */}
       <div className="flex items-center gap-2 mb-3">
         {item.role && (
-          <p className="text-[10px] text-white/15 font-mono uppercase tracking-wider">
+          <p className="text-[10px] text-white/70 font-mono uppercase tracking-wider">
             {item.role}
           </p>
         )}
         {item.owned && (
-          <span className="text-[8px] font-mono uppercase tracking-wider text-emerald-400/50 bg-emerald-400/5 px-1.5 py-px rounded-full">
+          <span className="text-[8px] font-mono uppercase tracking-wider text-emerald-400/80 bg-emerald-400/10 px-1.5 py-px rounded-full">
             Owned
           </span>
         )}
       </div>
 
       {/* Description */}
-      <p className="text-sm text-white/30 mb-4 leading-relaxed line-clamp-3">
+      <p className="text-sm text-white/70 mb-4 leading-relaxed line-clamp-3">
         {item.description}
       </p>
 
       {/* Metrics */}
       {item.metrics && (
-        <p className="text-xs text-sky-400/50 font-mono mb-3">{item.metrics}</p>
+        <p className="text-xs text-sky-400/80 font-mono mb-3">{item.metrics}</p>
       )}
 
       {/* Tags */}
@@ -81,13 +81,13 @@ export default function WorkCard({ item }: { item: WorkItem }) {
           {item.techStack.slice(0, 6).map((t) => (
             <span
               key={t}
-              className="text-[9px] text-white/10 font-mono uppercase tracking-widest bg-white/[0.015] px-2 py-0.5 rounded-full"
+              className="text-[9px] text-white/60 font-mono uppercase tracking-widest bg-white/[0.05] px-2 py-0.5 rounded-full"
             >
               {t}
             </span>
           ))}
           {item.techStack.length > 6 && (
-            <span className="text-[9px] text-white/10 font-mono">
+            <span className="text-[9px] text-white/60 font-mono">
               +{item.techStack.length - 6}
             </span>
           )}

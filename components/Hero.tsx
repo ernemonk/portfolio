@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { HeroSection } from "@/types";
+import { Button, LinkButton } from "@/components/Button";
+import { Heading } from "@/components/Heading";
 
 interface Props {
   data: HeroSection | null;
@@ -12,43 +14,74 @@ export default function Hero({ data }: Props) {
   const lastName = rest.join(" ");
 
   return (
-    <section className="relative min-h-screen flex flex-col justify-center pt-16 overflow-hidden">
-      {/* Subtle dot-grid background */}
-      <div className="absolute inset-0 dot-grid opacity-50" />
+    <section className="relative min-h-screen flex flex-col justify-center pt-20 overflow-hidden">
+      {/* Background pattern */}
+      <div className="absolute inset-0 dot-grid opacity-30" />
 
-      {/* Ambient glow */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-sky-500/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl" />
+      {/* Ambient gradient glows */}
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-secondary-500/5 rounded-full blur-3xl" />
 
-      <div className="relative max-w-6xl mx-auto px-6 py-24">
-        <p className="text-sky-400 text-xs font-mono tracking-[0.3em] mb-8 uppercase animate-fade-up">
+      <div className="container-max px-6 py-24 relative z-10">
+        {/* Tagline */}
+        <p className="text-primary-400 text-xs font-mono tracking-[0.3em] mb-8 uppercase animate-fade-up">
           {data.tagline}
         </p>
-        <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tight leading-none mb-6 animate-fade-up" style={{ animationDelay: "80ms" }}>
-          <span className="text-white">{firstName}</span>
+
+        {/* Main Heading */}
+        <Heading
+          level="h1"
+          size="4xl"
+          className="mb-6 animate-fade-up"
+          style={{ animationDelay: "80ms" }}
+        >
+          <span className="text-neutral-50">{firstName}</span>
           <br />
           <span className="text-gradient">{lastName}</span>
-        </h1>
-        <p className="text-xl md:text-2xl text-white/40 max-w-2xl mb-14 leading-relaxed animate-fade-up" style={{ animationDelay: "160ms" }}>
+        </Heading>
+
+        {/* Subheading */}
+        <p 
+          className="text-lg md:text-2xl text-neutral-400 max-w-2xl mb-14 leading-relaxed animate-fade-up"
+          style={{ animationDelay: "160ms" }}
+        >
           {data.subtext}
         </p>
-        <div className="flex flex-wrap gap-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
-          <Link
+
+        {/* CTA Buttons */}
+        <div 
+          className="flex flex-wrap gap-4 animate-fade-up"
+          style={{ animationDelay: "240ms" }}
+        >
+          <LinkButton
             href={data.cta1Href}
-            className="group relative px-8 py-4 bg-sky-500 text-white font-semibold text-sm rounded-full hover:bg-sky-400 transition-all duration-300 hover:shadow-[0_0_30px_-5px_rgba(56,189,248,0.4)]"
+            variant="primary"
+            size="lg"
+            className="group glow-hover"
           >
             {data.cta1Label}
-          </Link>
-          <Link
+            <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+          </LinkButton>
+
+          <LinkButton
             href={data.cta2Href}
-            className="px-8 py-4 border border-white/10 text-white/50 font-semibold text-sm rounded-full hover:border-white/30 hover:text-white transition-all duration-300"
+            variant="secondary"
+            size="lg"
           >
             {data.cta2Label}
-          </Link>
+          </LinkButton>
+
+          <LinkButton
+            href="/resume"
+            variant="outline"
+            size="lg"
+          >
+            View Resume
+          </LinkButton>
         </div>
       </div>
 
-      {/* Bottom fade line */}
+      {/* Bottom fade divider */}
       <div className="absolute bottom-0 left-0 right-0 gradient-line" />
     </section>
   );

@@ -1,12 +1,26 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { fetchOwnerBio } from "@/lib/firestore/server";
+import { Card } from "@/components/Card";
+import { Heading } from "@/components/Heading";
 
 const principles = [
-  { title: "Engineer for reliability.", desc: "Production systems have no room for shortcuts. Design for failure, test for edge cases." },
-  { title: "Integrations are the hard part.", desc: "APIs are easy. Keeping Salesforce, DocuSign, gRPC, and legacy systems in sync under load is the real work." },
-  { title: "Hardware roots, software scale.", desc: "Starting in PCB design and firmware taught me that abstractions are leaky. Knowing the substrate matters." },
-  { title: "Lead by shipping.", desc: "The best way to earn trust from a team is to write the hardest ticket yourself." },
+  { 
+    title: "Engineer for reliability.", 
+    desc: "Production systems have no room for shortcuts. Design for failure, test for edge cases." 
+  },
+  { 
+    title: "Integrations are the hard part.", 
+    desc: "APIs are easy. Keeping Salesforce, DocuSign, gRPC, and legacy systems in sync under load is the real work." 
+  },
+  { 
+    title: "Hardware roots, software scale.", 
+    desc: "Starting in PCB design and firmware taught me that abstractions are leaky. Knowing the substrate matters." 
+  },
+  { 
+    title: "Lead by shipping.", 
+    desc: "The best way to earn trust from a team is to write the hardest ticket yourself." 
+  },
 ];
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -27,13 +41,18 @@ export default async function AboutPage() {
   const bio = await fetchOwnerBio();
 
   return (
-    <div className="max-w-4xl mx-auto px-6 pt-32 pb-24">
-      <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">About</h1>
-      <p className="text-xl text-white/50 mb-16 leading-relaxed">
+    <div className="container-md px-6 pt-32 pb-24">
+      {/* Page heading */}
+      <Heading level="h1" size="3xl" className="mb-6">
+        About
+      </Heading>
+      
+      <p className="text-lg text-neutral-400 mb-16 leading-relaxed">
         {bio?.shortIntro ?? "Engineer. Integrations. IoT. Fintech."}
       </p>
 
-      <div className="space-y-6 text-white/60 leading-relaxed text-lg mb-20">
+      {/* Bio content */}
+      <div className="space-y-6 text-neutral-400 leading-relaxed text-lg mb-20">
         {bio?.longBio ? (
           <p>{bio.longBio}</p>
         ) : (
@@ -65,22 +84,31 @@ export default async function AboutPage() {
       {bio?.photos && bio.photos.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-20">
           {bio.photos.map((url, i) => (
-            <div key={i} className="aspect-square rounded-2xl overflow-hidden bg-white/5 relative">
-              <Image src={url} alt={`Ernesto Monge ${i + 1}`} fill className="object-cover" />
+            <div key={i} className="aspect-square rounded-lg overflow-hidden bg-neutral-900 border border-neutral-800 relative hover:border-primary-500/30 transition-all duration-300">
+              <Image 
+                src={url} 
+                alt={`Ernesto Monge ${i + 1}`} 
+                fill 
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 33vw"
+              />
             </div>
           ))}
         </div>
       )}
 
-      {/* Principles */}
-      <div className="pt-16 border-t border-white/10">
-        <h2 className="text-2xl font-bold text-white mb-8">Principles</h2>
+      {/* Principles section */}
+      <div className="pt-16 border-t border-neutral-800">
+        <Heading level="h2" size="2xl" className="mb-8">
+          Principles
+        </Heading>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {principles.map((v) => (
-            <div key={v.title} className="p-6 border border-white/10 rounded-2xl">
-              <p className="text-white font-semibold mb-1">{v.title}</p>
-              <p className="text-sm text-white/40">{v.desc}</p>
-            </div>
+          {principles.map((principle) => (
+            <Card key={principle.title} variant="default">
+              <p className="text-neutral-50 font-semibold mb-2">{principle.title}</p>
+              <p className="text-sm text-neutral-500">{principle.desc}</p>
+            </Card>
           ))}
         </div>
       </div>

@@ -2,54 +2,124 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────────────────────────────────
+   BASE STYLES
+   ───────────────────────────────────────────────────────────────────────── */
+
 html {
   scroll-behavior: smooth;
+  /* Respect user's motion preferences */
+  @apply motion-safe:scroll-smooth;
 }
 
 body {
-  background: #0a0a0a;
-  color: #ffffff;
+  @apply bg-neutral-950 text-neutral-100;
 }
 
-/* ─── Custom scrollbar ─── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0a0a0a; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #555; }
+/* ─────────────────────────────────────────────────────────────────────────
+   SCROLLBAR
+   ───────────────────────────────────────────────────────────────────────── */
 
-/* ─── Glass card ─── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-neutral-950;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-neutral-800 rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-neutral-700;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   FOCUS STATES (Accessibility)
+   ───────────────────────────────────────────────────────────────────────── */
+
+:focus-visible {
+  @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-neutral-950;
+}
+
+button:focus-visible {
+  @apply outline-none;
+}
+
+a:focus-visible {
+  @apply outline-none ring-2 ring-primary-400 ring-offset-2 ring-offset-neutral-950 rounded;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   REDUCED MOTION
+   ───────────────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   GLASS MORPHISM
+   ───────────────────────────────────────────────────────────────────────── */
+
 .glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  @apply bg-neutral-900/50 backdrop-blur-lg border border-neutral-800 rounded-lg;
 }
 
-/* ─── Gradient text utility ─── */
+.glass-hover {
+  @apply hover:border-primary-500/30 transition-all duration-300;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   GRADIENT TEXT
+   ───────────────────────────────────────────────────────────────────────── */
+
 .text-gradient {
-  background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+  @apply bg-gradient-to-r from-primary-400 via-secondary-500 to-tertiary-400;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .text-gradient-warm {
-  background: linear-gradient(135deg, #f59e0b, #ef4444, #ec4899);
+  @apply bg-gradient-to-r from-warm-400 via-red-500 to-pink-500;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* ─── Glow utilities ─── */
+/* ─────────────────────────────────────────────────────────────────────────
+   GLOW EFFECTS
+   ───────────────────────────────────────────────────────────────────────── */
+
 .glow-sm {
   box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.15);
 }
 
-.glow-hover:hover {
+.glow-md {
   box-shadow: 0 0 30px -5px rgba(56, 189, 248, 0.25);
 }
 
-/* ─── Subtle fade-in animation ─── */
+.glow-hover:hover {
+  @apply glow-md;
+}
+
+.glow-focus:focus {
+  box-shadow: 0 0 30px -5px rgba(56, 189, 248, 0.35);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   ANIMATIONS
+   ───────────────────────────────────────────────────────────────────────── */
+
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -65,7 +135,7 @@ body {
   animation: fadeUp 0.6s ease-out both;
 }
 
-/* stagger children */
+/* Stagger animation delay for children */
 .stagger > *:nth-child(1) { animation-delay: 0ms; }
 .stagger > *:nth-child(2) { animation-delay: 80ms; }
 .stagger > *:nth-child(3) { animation-delay: 160ms; }
@@ -76,29 +146,281 @@ body {
 .stagger > *:nth-child(8) { animation-delay: 560ms; }
 .stagger > *:nth-child(9) { animation-delay: 640ms; }
 
-/* ─── Dot grid background ─── */
+/* ─────────────────────────────────────────────────────────────────────────
+   BACKGROUND PATTERNS
+   ───────────────────────────────────────────────────────────────────────── */
+
 .dot-grid {
   background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
-/* ─── Separator gradient line ─── */
-.gradient-line {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.3), transparent);
+.dot-grid-lg {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
-/* ─── Pill tab active underline ─── */
-.tab-active {
-  position: relative;
+/* ─────────────────────────────────────────────────────────────────────────
+   DIVIDERS & LINES
+   ───────────────────────────────────────────────────────────────────────── */
+
+.gradient-line {
+  @apply h-px bg-gradient-to-r from-transparent via-primary-400/30 to-transparent;
 }
+
+.gradient-line-secondary {
+  @apply h-px bg-gradient-to-r from-transparent via-secondary-500/20 to-transparent;
+}
+
+.divider-subtle {
+  @apply border-b border-neutral-800;
+}
+
+.divider-accent {
+  @apply border-b border-primary-500/30;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   BUTTONS (Base Styles)
+   ───────────────────────────────────────────────────────────────────────── */
+
+.btn-base {
+  @apply inline-flex items-center justify-center font-semibold text-sm rounded-lg transition-all duration-300 ease-out;
+}
+
+.btn-primary {
+  @apply btn-base bg-primary-500 text-white hover:bg-primary-600 active:bg-primary-600;
+}
+
+.btn-primary-lg {
+  @apply btn-primary px-8 py-4;
+}
+
+.btn-primary-sm {
+  @apply btn-primary px-4 py-2;
+}
+
+.btn-secondary {
+  @apply btn-base bg-neutral-900 text-neutral-100 border border-neutral-700 hover:border-primary-400 hover:text-primary-400;
+}
+
+.btn-secondary-lg {
+  @apply btn-secondary px-8 py-4;
+}
+
+.btn-secondary-sm {
+  @apply btn-secondary px-4 py-2;
+}
+
+.btn-ghost {
+  @apply btn-base text-neutral-300 hover:text-primary-400 hover:bg-primary-500/10;
+}
+
+.btn-outline {
+  @apply btn-base px-8 py-4 border border-primary-500/30 text-primary-400 hover:border-primary-500 hover:bg-primary-500/5;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   CARDS
+   ───────────────────────────────────────────────────────────────────────── */
+
+.card {
+  @apply glass rounded-lg p-6;
+}
+
+.card-interactive {
+  @apply card hover:border-primary-500/30 hover:shadow-glow-sm transition-all duration-300 cursor-pointer;
+}
+
+.card-hover-lift {
+  @apply card-interactive hover:scale-105 hover:shadow-glow-md;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   FORM INPUTS
+   ───────────────────────────────────────────────────────────────────────── */
+
+.input-base {
+  @apply w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-3 text-neutral-50 placeholder-neutral-600 transition-all duration-300;
+}
+
+.input-base:focus {
+  @apply border-primary-400 outline-none ring-1 ring-primary-400/30;
+}
+
+.input-base::placeholder {
+  @apply text-neutral-500;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  @apply input-base;
+}
+
+textarea {
+  @apply resize-none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   TYPOGRAPHY
+   ───────────────────────────────────────────────────────────────────────── */
+
+h1 {
+  @apply text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-50 leading-tight;
+}
+
+h2 {
+  @apply text-3xl md:text-4xl font-bold text-neutral-50 leading-tight;
+}
+
+h3 {
+  @apply text-2xl md:text-3xl font-semibold text-neutral-100;
+}
+
+h4 {
+  @apply text-lg md:text-xl font-semibold text-neutral-100;
+}
+
+h5 {
+  @apply text-base font-semibold text-neutral-100;
+}
+
+h6 {
+  @apply text-sm font-semibold text-neutral-200;
+}
+
+p {
+  @apply text-neutral-300 leading-relaxed;
+}
+
+.text-primary {
+  @apply text-neutral-50;
+}
+
+.text-secondary {
+  @apply text-neutral-400;
+}
+
+.text-muted {
+  @apply text-neutral-500;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   BADGES & LABELS
+   ───────────────────────────────────────────────────────────────────────── */
+
+.badge {
+  @apply inline-flex items-center px-3 py-1 text-xs font-mono uppercase tracking-widest rounded-full;
+}
+
+.badge-primary {
+  @apply badge bg-primary-500/20 text-primary-400;
+}
+
+.badge-secondary {
+  @apply badge bg-secondary-500/20 text-secondary-400;
+}
+
+.badge-success {
+  @apply badge bg-success-500/20 text-success-400;
+}
+
+.badge-warning {
+  @apply badge bg-warning-500/20 text-warning-400;
+}
+
+.badge-error {
+  @apply badge bg-error-500/20 text-error-400;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   LINKS
+   ───────────────────────────────────────────────────────────────────────── */
+
+a {
+  @apply text-primary-400 hover:text-primary-500 transition-colors duration-300;
+}
+
+a.nav-link {
+  @apply text-neutral-300 hover:text-primary-400 transition-colors duration-300;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   TABS
+   ───────────────────────────────────────────────────────────────────────── */
+
+.tab {
+  @apply relative pb-2 text-neutral-400 hover:text-neutral-200 transition-colors duration-300;
+}
+
+.tab-active {
+  @apply text-primary-400;
+}
+
 .tab-active::after {
   content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #38bdf8, #818cf8);
-  border-radius: 1px;
+  @apply absolute bottom-0 left-0 right-0 h-0.5 bg-primary-400 rounded-full;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   UTILITIES
+   ───────────────────────────────────────────────────────────────────────── */
+
+.text-truncate-1 {
+  @apply line-clamp-1;
+}
+
+.text-truncate-2 {
+  @apply line-clamp-2;
+}
+
+.text-truncate-3 {
+  @apply line-clamp-3;
+}
+
+.centered {
+  @apply flex items-center justify-center;
+}
+
+.flex-center {
+  @apply centered;
+}
+
+.container-max {
+  @apply max-w-6xl mx-auto;
+}
+
+.container-md {
+  @apply max-w-4xl mx-auto;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   CODE & PRE
+   ───────────────────────────────────────────────────────────────────────── */
+
+code {
+  @apply font-mono text-sm bg-neutral-900 px-2 py-1 rounded text-primary-400;
+}
+
+pre {
+  @apply bg-neutral-900 p-4 rounded-lg overflow-x-auto border border-neutral-800;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   PROSE (Markdown Content)
+   ───────────────────────────────────────────────────────────────────────── */
+
+.prose {
+  @apply max-w-none;
+}
+
+.prose :where(a):not(:where([class~="not-prose"] *)) {
+  @apply text-primary-400 hover:text-primary-500;
+}
+
+.prose :where(code):not(:where([class~="not-prose"] *)) {
+  @apply bg-neutral-900 text-primary-400;
 }

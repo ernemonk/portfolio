@@ -3,7 +3,7 @@ import type { Venture } from "@/types";
 
 const statusColors: Record<string, string> = {
   active: "bg-emerald-400/10 text-emerald-400",
-  archived: "bg-white/10 text-white/30",
+  archived: "bg-white/10 text-white/70",
   exited: "bg-blue-400/10 text-blue-400",
 };
 
@@ -29,19 +29,19 @@ export default function VentureCard({ venture }: { venture: Venture }) {
             {venture.name[0]}
           </div>
         )}
-        <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusColors[venture.status] ?? "bg-white/10 text-white/30"}`}>
+        <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusColors[venture.status] ?? "bg-white/10 text-white/70"}`}>
           {venture.status}
         </span>
       </div>
       <h3 className="text-white font-semibold mb-1 group-hover:text-emerald-400 transition-colors">
         {venture.name}
       </h3>
-      <p className="text-sm text-white/40 mb-3 line-clamp-2">{venture.description}</p>
-      <p className="text-xs text-white/20 font-mono">{venture.role}</p>
+      <p className="text-sm text-white/75 mb-3 line-clamp-2">{venture.description}</p>
+      <p className="text-xs text-white/70 font-mono">{venture.role}</p>
       {venture.tags?.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-4">
           {venture.tags.map((tag) => (
-            <span key={tag} className="text-xs bg-white/5 text-white/30 px-2 py-0.5 rounded-full">
+            <span key={tag} className="text-xs bg-white/5 text-white/70 px-2 py-0.5 rounded-full">
               {tag}
             </span>
           ))}

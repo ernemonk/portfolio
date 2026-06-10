@@ -20,7 +20,7 @@ export default function MetricsBar({ metrics = [] }: Props) {
             <p className="text-5xl md:text-6xl font-bold text-gradient mb-3 tracking-tight">
               {m.value}
             </p>
-            <p className="text-[10px] text-white/20 uppercase tracking-[0.3em] font-mono">
+            <p className="text-[10px] text-white/70 uppercase tracking-[0.3em] font-mono">
               {m.label}
             </p>
           </div>

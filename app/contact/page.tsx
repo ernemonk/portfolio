@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ContactForm } from "./ContactForm";
+import { Heading } from "@/components/Heading";
 
 export const metadata: Metadata = {
   title: "Contact | Ernesto Monge",
@@ -14,19 +15,22 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="max-w-2xl mx-auto px-6 pt-32 pb-24">
-      <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">Contact</h1>
-      <p className="text-xl text-white/40 mb-16">
+    <div className="container-md px-6 pt-32 pb-24">
+      <Heading level="h1" size="3xl" className="mb-4">
+        Contact
+      </Heading>
+      
+      <p className="text-lg text-neutral-500 mb-16">
         Reach out for collaborations, contract work, or just to connect.
       </p>
 
       <ContactForm />
 
-      <div className="mt-16 pt-12 border-t border-white/10">
-        <p className="text-xs text-white/20 mb-2 uppercase tracking-widest font-mono">Email</p>
+      <div className="mt-16 pt-12 border-t border-neutral-800">
+        <p className="text-xs text-neutral-600 mb-2 uppercase tracking-widest font-mono">Email</p>
         <a
           href="mailto:erne.monge.s@gmail.com"
-          className="text-white hover:text-sky-400 transition-colors"
+          className="text-primary-400 hover:text-primary-300 transition-colors font-medium"
         >
           erne.monge.s@gmail.com
         </a>
