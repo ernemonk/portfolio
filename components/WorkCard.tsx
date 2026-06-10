@@ -12,9 +12,16 @@ const statusColors: Record<string, string> = {
   exited: "text-neutral-400 bg-neutral-800",
 };
 
+/** Derive a clear, action-oriented CTA label from the destination URL. */
+function ctaLabel(url: string): string {
+  if (/apps\.apple\.com/i.test(url)) return "View on App Store";
+  if (/play\.google\.com/i.test(url)) return "View on Play Store";
+  return "Visit Site";
+}
+
 export default function WorkCard({ item }: { item: WorkItem }) {
   return (
-    <div className="group glass rounded-2xl p-6 hover:border-primary-500/20 transition-all duration-500 glow-hover animate-fade-up">
+    <div className="group glass rounded-2xl p-6 flex flex-col h-full hover:border-primary-500/20 transition-all duration-500 glow-hover animate-fade-up">
       {/* Top row: logo / initial + status */}
       <div className="flex items-start justify-between mb-4">
         {item.logoURL ? (
@@ -39,12 +46,16 @@ export default function WorkCard({ item }: { item: WorkItem }) {
         </span>
       </div>
 
-      {/* Name */}
-      <h3 className="text-neutral-50 font-semibold mb-1 group-hover:text-primary-400 transition-colors duration-300 leading-tight">
+      {/* Name — clickable when a website exists, but the footer CTA is the primary affordance */}
+      <h3 className="text-neutral-50 font-semibold mb-1 leading-tight">
         {item.website ? (
-          <a href={item.website} target="_blank" rel="noopener noreferrer">
+          <a
+            href={item.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group-hover:text-primary-400 transition-colors duration-300"
+          >
             {item.name}
-            <span className="ml-1.5 text-neutral-500 group-hover:text-primary-400 text-xs">↗</span>
           </a>
         ) : (
           item.name
@@ -70,29 +81,63 @@ export default function WorkCard({ item }: { item: WorkItem }) {
         {item.description}
       </p>
 
-      {/* Metrics */}
+      {/* Metrics — a highlight stat, deliberately styled to read as info, not a link */}
       {item.metrics && (
-        <p className="text-xs text-primary-400/80 font-mono mb-3">{item.metrics}</p>
-      )}
-
-      {/* Tags */}
-      {item.techStack?.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-auto">
-          {item.techStack.slice(0, 6).map((t) => (
-            <span
-              key={t}
-              className="text-[9px] text-neutral-500 font-mono uppercase tracking-widest bg-neutral-800 px-2 py-0.5 rounded-full"
-            >
-              {t}
-            </span>
-          ))}
-          {item.techStack.length > 6 && (
-            <span className="text-[9px] text-neutral-500 font-mono">
-              +{item.techStack.length - 6}
-            </span>
-          )}
+        <div className="mb-4 inline-flex items-center gap-1.5 self-start rounded-md bg-neutral-800/60 px-2.5 py-1 text-xs text-neutral-300">
+          <svg
+            viewBox="0 0 24 24"
+            className="h-3 w-3 flex-shrink-0 text-success-400/80"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span className="font-mono">{item.metrics}</span>
         </div>
       )}
+
+      {/* Footer: tags + a single, obvious CTA pushed to the bottom */}
+      <div className="mt-auto">
+        {/* Tags */}
+        {item.techStack?.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {item.techStack.slice(0, 6).map((t) => (
+              <span
+                key={t}
+                className="text-[9px] text-neutral-500 font-mono uppercase tracking-widest bg-neutral-800 px-2 py-0.5 rounded-full"
+              >
+                {t}
+              </span>
+            ))}
+            {item.techStack.length > 6 && (
+              <span className="text-[9px] text-neutral-500 font-mono self-center">
+                +{item.techStack.length - 6}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Primary CTA — only when there's somewhere to go */}
+        {item.website && (
+          <div className="mt-4 pt-4 border-t border-neutral-800/60">
+            <a
+              href={item.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-400 hover:text-primary-300 transition-colors"
+            >
+              {ctaLabel(item.website)}
+              <span className="transition-transform duration-300 group-hover:translate-x-1">
+                →
+              </span>
+            </a>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
