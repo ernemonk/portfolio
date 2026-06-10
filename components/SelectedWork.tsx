@@ -31,7 +31,7 @@ export default function SelectedWork({ items = [] }: Props) {
   );
 
   return (
-    <section className="container-max px-6 py-28 relative">
+    <section id="selected-work" className="container-max px-6 py-28 relative">
       <div className="gradient-line mb-12" />
 
       {/* Section label */}

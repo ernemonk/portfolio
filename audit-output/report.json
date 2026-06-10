@@ -1,0 +1,142 @@
+{
+  "baseURL": "http://localhost:3000",
+  "generatedAt": "2026-06-10T03:42:42.304Z",
+  "pages": [
+    {
+      "route": "/",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "cls": 0,
+      "clsEntries": [],
+      "discoveredLinks": [
+        "/",
+        "/",
+        "/about/",
+        "/work/",
+        "/resume/",
+        "/contact/",
+        "/contact/",
+        "/resume/",
+        "/work/",
+        "/contact/",
+        "/privacy/"
+      ]
+    },
+    {
+      "route": "/about",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "cls": 0,
+      "clsEntries": [],
+      "discoveredLinks": [
+        "/",
+        "/",
+        "/about/",
+        "/work/",
+        "/resume/",
+        "/contact/",
+        "/work/",
+        "/contact/",
+        "/privacy/"
+      ]
+    },
+    {
+      "route": "/work",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "cls": 0,
+      "clsEntries": [],
+      "discoveredLinks": [
+        "/",
+        "/",
+        "/about/",
+        "/work/",
+        "/resume/",
+        "/contact/",
+        "/work/",
+        "/contact/",
+        "/privacy/"
+      ]
+    },
+    {
+      "route": "/resume",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "cls": 0.013905116437328533,
+      "clsEntries": [
+        {
+          "value": 0.0005970652220507544,
+          "time": 830.8999999994412,
+          "sources": [
+            "#text",
+            "BUTTON",
+            "H1"
+          ]
+        },
+        {
+          "value": 0.013308051215277778,
+          "time": 874.7999999998137,
+          "sources": [
+            "DIV",
+            "BUTTON",
+            "H1"
+          ]
+        }
+      ],
+      "discoveredLinks": [
+        "/",
+        "/",
+        "/about/",
+        "/work/",
+        "/resume/",
+        "/contact/",
+        "/",
+        "/work/",
+        "/contact/",
+        "/privacy/"
+      ]
+    },
+    {
+      "route": "/contact",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "cls": 0,
+      "clsEntries": [],
+      "discoveredLinks": [
+        "/",
+        "/",
+        "/about/",
+        "/work/",
+        "/resume/",
+        "/contact/",
+        "/work/",
+        "/contact/",
+        "/privacy/"
+      ]
+    },
+    {
+      "route": "/privacy",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "cls": 0,
+      "clsEntries": [],
+      "discoveredLinks": [
+        "/",
+        "/",
+        "/about/",
+        "/work/",
+        "/resume/",
+        "/contact/",
+        "/work/",
+        "/contact/",
+        "/privacy/"
+      ]
+    }
+  ]
+}

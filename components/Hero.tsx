@@ -72,7 +72,7 @@ export default function Hero({ data }: Props) {
           </LinkButton>
 
           <LinkButton
-            href="/resume"
+            href="/resume/"
             variant="outline"
             size="lg"
           >

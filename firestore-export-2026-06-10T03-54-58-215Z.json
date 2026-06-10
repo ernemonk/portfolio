@@ -1,0 +1,532 @@
+{
+  "bio": {
+    "0mZ4SgmobAZwJvToKkPp8RZlwiT2": {
+      "longBio": "Ernesto Monge is a lead full-stack engineer and founder focused on turning complex, integrated systems into reliable products. With a background in firmware and hardware, he builds cloud-native platforms and real‑time pipelines that scale in production. He’s led engineering at fintech and enterprise companies and continues to found and advise early-stage projects. He prioritizes reliability, simplicity, and shipping measurable value.",
+      "name": "Ernesto Monge",
+      "headline": "Builder, founder, and creative technologist Builder & founder — systems, integrations, and IoT",
+      "photos": [],
+      "shortIntro": "Builder, founder, and creative technologist building resilient systems and product-led teams.",
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "__metadata": {
+        "docId": "0mZ4SgmobAZwJvToKkPp8RZlwiT2",
+        "createdAt": "2026-02-26T23:05:49.018Z",
+        "updatedAt": "2026-02-26T23:52:59.385Z"
+      }
+    }
+  },
+  "messages": {
+    "O6jjTM3I5SSqxV3yXUf0": {
+      "name": "Mike",
+      "email": "hello@gmail.com",
+      "message": "Are youa ailable",
+      "reply": "",
+      "createdAt": {
+        "_seconds": 1772141314,
+        "_nanoseconds": 946000000
+      },
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "read": true,
+      "__metadata": {
+        "docId": "O6jjTM3I5SSqxV3yXUf0",
+        "createdAt": "2026-02-26T21:28:35.304Z",
+        "updatedAt": "2026-03-02T02:55:36.479Z"
+      }
+    }
+  },
+  "sections": {
+    "capabilities": {
+      "blocks": [
+        {
+          "title": "Enterprise Engineering",
+          "description": "Real-time systems, distributed infrastructure, integrations, cloud-native platforms."
+        },
+        {
+          "title": "Fractional CTO / Consulting",
+          "description": "Architecture design, 0→1 product execution, scaling engineering teams, technical strategy."
+        },
+        {
+          "title": "Founder Projects",
+          "description": "Products I design, build, and launch end-to-end."
+        }
+      ],
+      "order": 2,
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "updatedAt": {
+        "_seconds": 1772153336,
+        "_nanoseconds": 615000000
+      },
+      "__metadata": {
+        "docId": "capabilities",
+        "createdAt": "2026-02-27T00:48:52.415Z",
+        "updatedAt": "2026-02-27T00:48:56.624Z"
+      }
+    },
+    "currentFocus": {
+      "title": "Current Focus",
+      "items": [
+        "Leading integrations engineering at AssetMark — Salesforce, DocuSign, gRPC pipelines.",
+        "Scaling Lunchbox — AI-powered meal planning, live on the App Store.",
+        "Advising early-stage startups on architecture and 0→1 execution."
+      ],
+      "order": 5,
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "updatedAt": {
+        "_seconds": 1772153336,
+        "_nanoseconds": 615000000
+      },
+      "__metadata": {
+        "docId": "currentFocus",
+        "createdAt": "2026-02-27T00:48:52.415Z",
+        "updatedAt": "2026-02-27T00:48:56.624Z"
+      }
+    },
+    "hero": {
+      "name": "Ernesto Monge",
+      "tagline": "Engineering scalable systems. Building real products.",
+      "subtext": "10+ years designing and shipping enterprise infrastructure, real-time platforms, and AI-powered applications.",
+      "cta1Label": "View Work",
+      "cta1Href": "#selected-work",
+      "cta2Label": "Work With Me",
+      "cta2Href": "/contact",
+      "order": 1,
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "updatedAt": {
+        "_seconds": 1772153336,
+        "_nanoseconds": 615000000
+      },
+      "__metadata": {
+        "docId": "hero",
+        "createdAt": "2026-02-27T00:48:52.415Z",
+        "updatedAt": "2026-02-27T00:48:56.624Z"
+      }
+    }
+  },
+  "siteMetrics": {
+    "0S7rO0HINuPBBSW8OexV": {
+      "label": "Years Experience",
+      "value": "10+",
+      "order": 1,
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "updatedAt": {
+        "_seconds": 1772153336,
+        "_nanoseconds": 985000000
+      },
+      "__metadata": {
+        "docId": "0S7rO0HINuPBBSW8OexV",
+        "createdAt": "2026-02-27T00:48:57.010Z",
+        "updatedAt": "2026-02-27T00:48:57.010Z"
+      }
+    },
+    "8djYwZvgroMbojVf4CbJ": {
+      "label": "Enterprise Clients",
+      "value": "7+",
+      "order": 2,
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "updatedAt": {
+        "_seconds": 1772153332,
+        "_nanoseconds": 852000000
+      },
+      "__metadata": {
+        "docId": "8djYwZvgroMbojVf4CbJ",
+        "createdAt": "2026-02-27T00:48:52.875Z",
+        "updatedAt": "2026-02-27T00:48:52.875Z"
+      }
+    },
+    "FmJb4hIjCRARh76geZyO": {
+      "label": "Production Systems Deployed",
+      "value": "15+",
+      "order": 3,
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "updatedAt": {
+        "_seconds": 1772153336,
+        "_nanoseconds": 985000000
+      },
+      "__metadata": {
+        "docId": "FmJb4hIjCRARh76geZyO",
+        "createdAt": "2026-02-27T00:48:57.010Z",
+        "updatedAt": "2026-02-27T00:48:57.010Z"
+      }
+    },
+    "i23dXqdXUQYVM5ZXop4G": {
+      "label": "Real-Time Events / Month",
+      "value": "1M+",
+      "order": 4,
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "updatedAt": {
+        "_seconds": 1772153336,
+        "_nanoseconds": 985000000
+      },
+      "__metadata": {
+        "docId": "i23dXqdXUQYVM5ZXop4G",
+        "createdAt": "2026-02-27T00:48:57.010Z",
+        "updatedAt": "2026-02-27T00:48:57.010Z"
+      }
+    }
+  },
+  "users": {
+    "naYXUw6EACQMwPTsJZSscTL1NDx1": {
+      "email": "erne.monge.s@gmail.com",
+      "displayName": "",
+      "photoURL": "",
+      "createdAt": {
+        "_seconds": 1772149916,
+        "_nanoseconds": 552000000
+      },
+      "__metadata": {
+        "docId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+        "createdAt": "2026-02-26T23:51:56.583Z",
+        "updatedAt": "2026-02-26T23:51:56.583Z"
+      }
+    }
+  },
+  "workItems": {
+    "GZ55QP5olbTy6gtNRmt1": {
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "name": "Treasury Dashboard — First Republic Bank",
+      "description": "Internal treasury and cash management dashboard with live data feeds, automated reconciliation, and drill-down reporting for daily cash position tracking.",
+      "type": "project",
+      "category": "enterprise",
+      "tags": [
+        "React",
+        "Node.js",
+        ".NET",
+        "SQL Server"
+      ],
+      "status": "completed",
+      "owned": false,
+      "role": "Lead Engineer",
+      "website": "",
+      "logoURL": "",
+      "techStack": [
+        "React",
+        "Node.js",
+        ".NET",
+        "SQL Server"
+      ],
+      "metrics": "",
+      "images": [],
+      "featured": false,
+      "order": 4,
+      "createdAt": {
+        "_seconds": 1772236351,
+        "_nanoseconds": 523000000
+      },
+      "__metadata": {
+        "docId": "GZ55QP5olbTy6gtNRmt1",
+        "createdAt": "2026-02-27T23:52:31.631Z",
+        "updatedAt": "2026-02-27T23:52:31.631Z"
+      }
+    },
+    "JLDY5PuR8VDfxLW6sjaI": {
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "name": "GPS Tracking Infrastructure",
+      "description": "Designed and built a real-time GPS tracking backend with gRPC position streaming, map rendering pipelines, and alerting for 10k+ simultaneous fleet devices.",
+      "type": "project",
+      "category": "enterprise",
+      "tags": [
+        "Node.js",
+        "gRPC",
+        "PostgreSQL",
+        "Redis",
+        "Google Maps"
+      ],
+      "status": "completed",
+      "owned": false,
+      "role": "Lead Engineer",
+      "website": "",
+      "logoURL": "",
+      "techStack": [
+        "Node.js",
+        "gRPC",
+        "PostgreSQL",
+        "Redis",
+        "Google Maps"
+      ],
+      "metrics": "10k+ active devices",
+      "images": [],
+      "featured": true,
+      "order": 2,
+      "createdAt": {
+        "_seconds": 1772236351,
+        "_nanoseconds": 523000000
+      },
+      "__metadata": {
+        "docId": "JLDY5PuR8VDfxLW6sjaI",
+        "createdAt": "2026-02-27T23:52:31.631Z",
+        "updatedAt": "2026-02-27T23:52:31.631Z"
+      }
+    },
+    "Kg4pFB8buzDhv7kJc2iL": {
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "name": "E-gas Technology — IoT Propane Tank Monitoring",
+      "description": "End-to-end IoT product for monitoring propane tank levels. Designed and manufactured PCBs, developed C++ firmware for ESP8266 microcontrollers, built cloud data ingestion pipeline, and shipped mobile apps to App Store and Play Store.",
+      "type": "venture",
+      "category": "founder",
+      "tags": [
+        "C++",
+        "ESP8266",
+        "IoT",
+        "PCB Design",
+        "Google IoT Core",
+        "React.js",
+        "Flutter",
+        "Firebase"
+      ],
+      "status": "completed",
+      "owned": true,
+      "role": "Founder",
+      "website": "",
+      "logoURL": "",
+      "techStack": [
+        "C++",
+        "ESP8266",
+        "PCB Design",
+        "I2C/SPI",
+        "MQTT",
+        "Google IoT Core",
+        "Pub/Sub",
+        "Cloud Functions",
+        "Python",
+        "Django",
+        "React.js",
+        "Flutter",
+        "Firebase"
+      ],
+      "metrics": "App Store + Play Store launch",
+      "images": [],
+      "featured": true,
+      "order": 2,
+      "createdAt": {
+        "_seconds": 1781063672,
+        "_nanoseconds": 338000000
+      },
+      "__metadata": {
+        "docId": "Kg4pFB8buzDhv7kJc2iL",
+        "createdAt": "2026-06-10T03:54:33.393Z",
+        "updatedAt": "2026-06-10T03:54:33.393Z"
+      }
+    },
+    "MUREgLRcZIsAaDnlGXyv": {
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "name": "AssetMark — Integrations Platform",
+      "description": "Leading engineering for Salesforce integrations, DocuSign contract workflows, and gRPC-based real-time data sync across financial advisor platforms.",
+      "type": "project",
+      "category": "enterprise",
+      "tags": [
+        "Node.js",
+        ".NET",
+        "gRPC",
+        "Salesforce",
+        "DocuSign",
+        "Azure"
+      ],
+      "status": "completed",
+      "owned": false,
+      "role": "Lead Engineer",
+      "website": "",
+      "logoURL": "",
+      "techStack": [
+        "Node.js",
+        ".NET",
+        "gRPC",
+        "Salesforce",
+        "DocuSign",
+        "Azure"
+      ],
+      "metrics": "Current role — production at scale",
+      "images": [],
+      "featured": true,
+      "order": 1,
+      "createdAt": {
+        "_seconds": 1772236351,
+        "_nanoseconds": 523000000
+      },
+      "__metadata": {
+        "docId": "MUREgLRcZIsAaDnlGXyv",
+        "createdAt": "2026-02-27T23:52:31.631Z",
+        "updatedAt": "2026-02-27T23:52:31.631Z"
+      }
+    },
+    "NhG57OlW65sbkL8A0cOy": {
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "name": "Audio Fingerprinting Pipeline",
+      "description": "Automated audio fingerprinting and content recognition pipeline using FFT processing and distributed job queues for media rights detection at scale.",
+      "type": "project",
+      "category": "enterprise",
+      "tags": [
+        "Python",
+        "FFmpeg",
+        "Redis",
+        "PostgreSQL",
+        "AWS"
+      ],
+      "status": "completed",
+      "owned": false,
+      "role": "Lead Engineer",
+      "website": "",
+      "logoURL": "",
+      "techStack": [
+        "Python",
+        "FFmpeg",
+        "Redis",
+        "PostgreSQL",
+        "AWS"
+      ],
+      "metrics": "",
+      "images": [],
+      "featured": false,
+      "order": 5,
+      "createdAt": {
+        "_seconds": 1772236351,
+        "_nanoseconds": 523000000
+      },
+      "__metadata": {
+        "docId": "NhG57OlW65sbkL8A0cOy",
+        "createdAt": "2026-02-27T23:52:31.631Z",
+        "updatedAt": "2026-02-27T23:52:31.631Z"
+      }
+    },
+    "VZz9A0fZOBIJRsmpZHGs": {
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "name": "Ernesto Monge Consulting",
+      "description": "Fractional CTO and architecture consulting — helping startups achieve architecture clarity, reduce infrastructure costs, execute MVPs, and build scaling foundations.",
+      "type": "client",
+      "category": "consulting",
+      "tags": [],
+      "status": "completed",
+      "owned": false,
+      "role": "Lead Engineer",
+      "website": "",
+      "logoURL": "",
+      "techStack": [],
+      "metrics": "",
+      "images": [],
+      "featured": true,
+      "order": 1,
+      "createdAt": {
+        "_seconds": 1772236351,
+        "_nanoseconds": 523000000
+      },
+      "__metadata": {
+        "docId": "VZz9A0fZOBIJRsmpZHGs",
+        "createdAt": "2026-02-27T23:52:31.631Z",
+        "updatedAt": "2026-02-27T23:52:31.631Z"
+      }
+    },
+    "aiMWUOx7ERlDKyfRIMwT": {
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "name": "Data Migration Platform — JPMorgan Chase",
+      "description": "Built a configurable migration engine for moving legacy financial data to modern cloud systems — validation pipelines, audit trails, rollback support. 100M+ records.",
+      "type": "project",
+      "category": "enterprise",
+      "tags": [
+        "Java",
+        ".NET",
+        "SQL Server",
+        "Azure"
+      ],
+      "status": "completed",
+      "owned": false,
+      "role": "Lead Engineer",
+      "website": "",
+      "logoURL": "",
+      "techStack": [
+        "Java",
+        ".NET",
+        "SQL Server",
+        "Azure"
+      ],
+      "metrics": "100M+ records migrated",
+      "images": [],
+      "featured": true,
+      "order": 3,
+      "createdAt": {
+        "_seconds": 1772236351,
+        "_nanoseconds": 523000000
+      },
+      "__metadata": {
+        "docId": "aiMWUOx7ERlDKyfRIMwT",
+        "createdAt": "2026-02-27T23:52:31.631Z",
+        "updatedAt": "2026-02-27T23:52:31.631Z"
+      }
+    },
+    "bUN0oDLlgVLLZdBpOAYi": {
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "name": "Lunchbox — AI Meal Planner",
+      "description": "End-to-end iOS app: AI recipe engine ingesting fridge inventory, dietary constraints, and macros. Barcode scanning, favorites system, and diet-aware generation. Shipped to the App Store.",
+      "type": "venture",
+      "category": "founder",
+      "tags": [
+        "React Native",
+        "Firebase",
+        "OpenAI",
+        "Node.js",
+        "iOS"
+      ],
+      "status": "completed",
+      "owned": true,
+      "role": "Founder",
+      "website": "https://lunchbox-gen.web.app",
+      "logoURL": "",
+      "techStack": [
+        "React Native",
+        "Firebase",
+        "OpenAI",
+        "Node.js",
+        "iOS"
+      ],
+      "metrics": "Live on App Store",
+      "images": [],
+      "featured": true,
+      "order": 1,
+      "createdAt": {
+        "_seconds": 1772236351,
+        "_nanoseconds": 523000000
+      },
+      "__metadata": {
+        "docId": "bUN0oDLlgVLLZdBpOAYi",
+        "createdAt": "2026-02-27T23:52:31.631Z",
+        "updatedAt": "2026-02-27T23:52:31.631Z"
+      }
+    },
+    "hkl4JM0Twntpy30bpU6g": {
+      "userId": "naYXUw6EACQMwPTsJZSscTL1NDx1",
+      "name": "Portfolio Platform",
+      "description": "This site — statically exported Next.js app with Firebase Auth, Firestore-driven content, admin portal, and CI/CD via GitHub Actions to Firebase Hosting.",
+      "type": "venture",
+      "category": "founder",
+      "tags": [
+        "Next.js",
+        "React",
+        "TypeScript",
+        "Firebase",
+        "Tailwind CSS"
+      ],
+      "status": "completed",
+      "owned": true,
+      "role": "Founder",
+      "website": "https://ernestomongesanchez.web.app",
+      "logoURL": "",
+      "techStack": [
+        "Next.js",
+        "React",
+        "TypeScript",
+        "Firebase",
+        "Tailwind CSS"
+      ],
+      "metrics": "",
+      "images": [],
+      "featured": true,
+      "order": 2,
+      "createdAt": {
+        "_seconds": 1772236351,
+        "_nanoseconds": 523000000
+      },
+      "__metadata": {
+        "docId": "hkl4JM0Twntpy30bpU6g",
+        "createdAt": "2026-02-27T23:52:31.631Z",
+        "updatedAt": "2026-02-27T23:52:31.631Z"
+      }
+    }
+  }
+}
