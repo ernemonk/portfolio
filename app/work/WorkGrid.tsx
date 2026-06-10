@@ -40,8 +40,8 @@ export function WorkGrid({ items }: { items: WorkItem[] }) {
             onClick={() => setTypeFilter(f.value)}
             className={`px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-300 ${
               typeFilter === f.value
-                ? "bg-sky-500/10 text-sky-400 border border-sky-500/20 tab-active"
-                : "text-white/20 border border-white/5 hover:border-white/10 hover:text-white/40"
+                ? "bg-primary-500/10 text-primary-400 border border-primary-500/20 tab-active"
+                : "text-neutral-500 border border-neutral-800 hover:border-neutral-600 hover:text-neutral-300"
             }`}
           >
             {f.label}
@@ -51,7 +51,7 @@ export function WorkGrid({ items }: { items: WorkItem[] }) {
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <p className="text-white/15 text-center py-24 font-mono text-sm">
+        <p className="text-neutral-600 text-center py-24 font-mono text-sm">
           No items found.
         </p>
       ) : (

@@ -23,7 +23,7 @@ export default async function WorkPage() {
         <h1 className="text-5xl md:text-7xl font-bold mb-4">
           <span className="text-gradient">Work</span>
         </h1>
-        <p className="text-xl text-white/30 max-w-2xl leading-relaxed">
+        <p className="text-xl text-neutral-500 max-w-2xl leading-relaxed">
           Ventures I&apos;ve built, enterprise systems I&apos;ve engineered,
           clients I&apos;ve consulted, and experiments I&apos;m running.
         </p>

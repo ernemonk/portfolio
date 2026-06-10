@@ -20,7 +20,7 @@ export default function Hero({ data }: Props) {
 
       {/* Ambient gradient glows */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-secondary-500/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
 
       <div className="container-max px-6 py-24 relative z-10">
         {/* Tagline */}

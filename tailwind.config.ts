@@ -9,30 +9,39 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Primary Accents (Blue)
-        primary: {
-          50: "#f0f9ff",
-          400: "#38bdf8",
-          500: "#0ea5e9",
-          600: "#0284c7",
+        // Graphite neutral scale ("Graphite & Cobalt")
+        neutral: {
+          50: "#F5F5F7",
+          100: "#E8E8EC",
+          200: "#D4D4DA",
+          300: "#B8B8C2",
+          400: "#9999A6",
+          500: "#5C5C68",
+          600: "#34343F",
+          700: "#25252E",
+          800: "#1A1A21",
+          900: "#131318",
+          950: "#0B0B0E",
         },
-        // Secondary Accents (Purple)
+        // Primary Accent (Cobalt) - the single signal color
+        primary: {
+          50: "#EEF1FF",
+          300: "#A3B4FF",
+          400: "#7A91FF",
+          500: "#4F6BFF",
+          600: "#3D56E6",
+        },
+        // Secondary Accents (Purple) - reserved, low usage
         secondary: {
           400: "#a78bfa",
           500: "#8b5cf6",
           600: "#7c3aed",
         },
-        // Tertiary Accents (Teal)
+        // Tertiary Accents (Teal) - reserved, low usage
         tertiary: {
           400: "#2dd4bf",
           500: "#14b8a6",
           600: "#0d9488",
-        },
-        // Warm Colors (Orange/Red)
-        warm: {
-          400: "#f59e0b",
-          500: "#f97316",
-          600: "#ea580c",
         },
         // Semantic Colors
         success: {
@@ -72,11 +81,11 @@ const config: Config = {
         "xl": "16px",
       },
       boxShadow: {
-        "glow-sm": "0 0 20px -5px rgba(56, 189, 248, 0.15)",
-        "glow-md": "0 0 30px -5px rgba(56, 189, 248, 0.25)",
+        "glow-sm": "0 0 20px -5px rgba(79, 107, 255, 0.15)",
+        "glow-md": "0 0 30px -5px rgba(79, 107, 255, 0.25)",
       },
       animation: {
-        "fade-up": "fadeUp 0.6s ease-out both",
+        "fade-up": "fadeUp 0.4s ease-out both",
       },
     },
   },

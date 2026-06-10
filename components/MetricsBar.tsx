@@ -10,7 +10,7 @@ export default function MetricsBar({ metrics = [] }: Props) {
   return (
     <section className="relative py-20 overflow-hidden">
       {/* Ambient background glow */}
-      <div className="absolute inset-0 bg-gradient-to-r from-sky-500/[0.03] via-transparent to-indigo-500/[0.03]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary-500/[0.03] via-transparent to-primary-500/[0.03]" />
       <div className="absolute inset-x-0 top-0 gradient-line" />
       <div className="absolute inset-x-0 bottom-0 gradient-line" />
 
@@ -20,7 +20,7 @@ export default function MetricsBar({ metrics = [] }: Props) {
             <p className="text-5xl md:text-6xl font-bold text-gradient mb-3 tracking-tight">
               {m.value}
             </p>
-            <p className="text-[10px] text-white/70 uppercase tracking-[0.3em] font-mono">
+            <p className="text-[10px] text-neutral-400 uppercase tracking-[0.3em] font-mono">
               {m.label}
             </p>
           </div>

@@ -2,7 +2,21 @@
 
 **Date:** June 9, 2026  
 **Project:** Ernesto Monge Portfolio Website  
-**Status:** Complete Analysis & Refactoring Plan Ready
+**Status:** Design System v1 implemented. Trading/portal subsystem removed (archived under `.archive/trading-backup/`). Next initiative: "Elite" visual refresh (see `Docs/DESIGN_TOKENS.md` for the live token reference).
+
+---
+
+## Status Update (June 9, 2026)
+
+The "Proposed Design System" and "Refactoring Strategy" sections below describe work that has since been **completed**:
+
+- `tailwind.config.ts` carries the full `primary`/`secondary`/`tertiary`/`warm`/`success`/`warning`/`error` palette plus spacing, radius, shadow, and animation tokens.
+- `app/globals.css` (426 lines) is organized into Base, Scrollbar, Focus, Reduced Motion, Glass, Gradient Text, Glow, Animations, Backgrounds, Dividers, Buttons, Cards, Inputs, Typography, Badges, Links, Tabs, and Prose sections.
+- `Button`, `Card`, `Input`/`Textarea`, `Badge`, and `Heading` components exist in `components/` and are used by `Hero`, `CapabilityBlocks`, `SelectedWork`, `ContactForm`, `about`, and `contact`.
+- The trading/portal subsystem (`lib/trading-api.ts`, `lib/service-*`, `components/portal/Service*`, `SystemFlowView`, `DatabaseBrowser`, `CredentialManager`, `app/portal/trading/*`, `app/portal/config`) has been **removed** and archived to `.archive/trading-backup/`.
+- A new `/resume` route (`app/resume/page.tsx`) renders `public/docs/resume-master.md` client-side with a print-to-PDF action.
+
+Remaining known issues are tracked in [Issues & Inconsistencies](#issues--inconsistencies) below, now annotated with their current status.
 
 ---
 
@@ -199,21 +213,23 @@ users/{uid}
 | `/` | `app/page.tsx` | Hero, Capabilities, SelectedWork, MetricsBar, CurrentFocus | Firestore (sections, workItems, metrics) | ✅ Active |
 | `/about` | `app/about/page.tsx` | Bio, principles grid | Firestore (bio) | ✅ Active |
 | `/work` | `app/work/page.tsx` | WorkGrid (all items) | Firestore (workItems) | ✅ Active |
-| `/resume` | `app/resume/page.tsx` | PDF/markdown resume | TBD | ❓ Unclear |
+| `/resume` | `app/resume/page.tsx` | Markdown resume + print-to-PDF | `public/docs/resume-master.md` (static fetch) | ✅ Active |
 | `/contact` | `app/contact/page.tsx` | ContactForm | Firestore (messages) | ✅ Active |
 | `/privacy` | `app/privacy/page.tsx` | Privacy policy text | Static HTML | ✅ Active |
 
-### Protected Portal Routes (Future)
+### Protected Portal Routes
 
 | Route | File | Component | Purpose |
 |-------|------|-----------|---------|
-| `/portal` | `app/portal/layout.tsx` | PortalShell layout | Auth wrapper |
+| `/portal` | `app/portal/layout.tsx` + `app/portal/page.tsx` | PortalShell layout | Auth wrapper / landing |
 | `/portal/dashboard` | `app/portal/dashboard/page.tsx` | Dashboard | Owner dashboard |
 | `/portal/bio` | `app/portal/bio/page.tsx` | Bio editor | Edit bio section |
 | `/portal/messages` | `app/portal/messages/page.tsx` | Message viewer | Read/reply to messages |
 | `/portal/work` | `app/portal/work/page.tsx` | Work editor | Manage work items |
 | `/portal/login` | `app/portal/login/page.tsx` | Login form | Firebase auth |
 | `/portal/signup` | `app/portal/signup/page.tsx` | Signup form | Registration (disabled?) |
+
+> Note: The trading dashboard, service registry, and credential manager that previously lived under `/portal/trading` and `/portal/config` have been removed and archived to `.archive/trading-backup/`. `PortalShell.tsx` still has stale `Trading`/`Research & Analysis` keys in its `openSections` localStorage state (components/portal/PortalShell.tsx:130-132) — harmless but worth removing in a future cleanup.
 
 ---
 
@@ -260,10 +276,20 @@ RootLayout (app/layout.tsx)
 | **MetricsBar** | `components/MetricsBar.tsx` | Metrics display | `{ metrics: SiteMetric[] }` |
 | **CurrentFocus** | `components/CurrentFocus.tsx` | Focus list | `{ data: CurrentFocusSection \| null }` |
 | **WorkCard** | `components/WorkCard.tsx` | Individual work item | `{ item: WorkItem }` |
-| **WorkGrid** | `components/WorkGrid.tsx` | All work items grid | `{ items: WorkItem[] }` |
+| **WorkGrid** | `app/work/WorkGrid.tsx` | All work items grid | `{ items: WorkItem[] }` |
 | **VentureCard** | `components/VentureCard.tsx` | Legacy venture display | TBD |
 | **ContactForm** | `app/contact/ContactForm.tsx` | Contact form | None |
-| **PortalShell** | `components/portal/PortalShell.tsx` | Portal layout wrapper | `{ children }` |
+| **PortalShell** | `components/portal/PortalShell.tsx` | Portal layout wrapper | `{ children, title?, action?, unreadCount? }` |
+
+### Design System Components (implemented)
+
+| Component | Location | Purpose | Variants |
+|-----------|----------|---------|----------|
+| **Button / LinkButton** | `components/Button.tsx` | Buttons & link-styled CTAs | `primary`, `secondary`, `ghost`, `outline` × `sm`/`md`/`lg`, `isLoading`, `fullWidth` |
+| **Card** | `components/Card.tsx` | Surface container | `default`, `glass`, `elevated`, `interactive` |
+| **Heading** | `components/Heading.tsx` | h1-h6 with consistent scale | `level`, `size`, `gradient` |
+| **Input / Textarea** | `components/Input.tsx` | Form fields | `label`, `error`, `helperText` |
+| **Badge** | `components/Badge.tsx` | Status/tag pill | `primary`, `secondary`, `success`, `warning`, `error` |
 
 ---
 
@@ -362,51 +388,50 @@ RootLayout (app/layout.tsx)
 
 ## Issues & Inconsistencies
 
+> Status as of June 9, 2026. Items marked ✅ were resolved by the Design System v1 refactor. Items marked 🎯 are explicitly **in scope for the upcoming "Elite" visual refresh** (Phase 3). Items marked ⚠️ remain but are lower priority / data-layer concerns.
+
 ### 1. **Color Scheme Problems**
-- ❌ **Monotonous Accents:** Over-reliance on sky-blue (#38bdf8)
-- ❌ **Limited Palette:** Only 3 primary accent colors (sky, indigo, purple) + emerald/green
-- ❌ **Contrast Issues:** White/70 on dark background passes WCAG AA, but white/40 on dark is risky
-- ❌ **No Secondary Colors:** Lack of supporting colors for alerts, warnings, states
-- ❌ **Warm Gradient Unused:** `.text-gradient-warm` defined but not used anywhere
+- ✅ **Limited Palette:** Resolved — `tailwind.config.ts` now has primary/secondary/tertiary/warm/success/warning/error scales
+- ✅ **No Secondary Colors:** Resolved — semantic colors added for alerts/warnings/states
+- 🎯 **Monotonous Accents:** Sky-blue (#38bdf8) is still the dominant accent across the new palette — the "Elite" refresh will propose a more distinctive primary identity
+- 🎯 **Contrast Issues:** `text-white/40`-equivalents may still appear in older components — audit during Elite refresh
+- 🎯 **Warm Gradient Unused:** `.text-gradient-warm` still defined but unused
 
 ### 2. **Component Inconsistencies**
-- ❌ **WorkCard vs VentureCard:** Duplicated logic, different implementations
-- ❌ **Form Inputs:** ContactForm has custom styling that differs from portal forms
-- ❌ **Button Styles:** CTA buttons in Hero hardcoded, not using component
-- ❌ **Spacing:** Inconsistent padding/margin across sections (some `px-6`, some inline)
-- ❌ **Card Styling:** Glass cards used inconsistently (CapabilityBlocks vs SelectedWork)
+- ✅ **Button Styles:** Resolved — `Button`/`LinkButton` component used by Hero and others
+- ✅ **Form Inputs:** Resolved — `Input`/`Textarea` components used by ContactForm
+- ✅ **Card Styling:** Resolved — `Card` component (`default`/`glass`/`elevated`/`interactive`) used across CapabilityBlocks, SelectedWork
+- 🎯 **WorkCard vs VentureCard:** Still duplicated — candidate for consolidation during Elite refresh
+- 🎯 **Spacing:** Still some inconsistent padding/margin across sections — to be audited
 
 ### 3. **Typography Issues**
-- ❌ **No Type Scale Defined:** Font sizes scattered across components
-- ❌ **Inconsistent Font Weights:** Some titles use bold, others semibold
-- ❌ **Line Height Variations:** No standard line-height system
-- ❌ **No Heading Hierarchy:** h1-h6 not semantically used
+- ✅ **No Heading Hierarchy:** Resolved — `Heading` component (h1-h6) in use
+- ✅ **No Type Scale Defined:** Resolved — scale defined in `globals.css` typography section
+- 🎯 **Font Pairing:** Inter-only; Elite refresh will evaluate a display/mono pairing for more distinctive hierarchy
 
 ### 4. **Layout Problems**
-- ❌ **Max-width Not Consistent:** Most use `max-w-6xl`, but some use `max-w-4xl`
-- ❌ **Padding Inconsistency:** Desktop uses `px-6`, but no clear mobile breakpoint strategy
-- ❌ **Section Spacing:** `py-28` used everywhere; no variation for visual hierarchy
-- ❌ **No Grid System:** Manual grid definitions in each component
+- ✅ **No Grid System:** Resolved via `container-max`/`container-md` utilities
+- 🎯 **Max-width Not Consistent:** Some pages still mix `max-w-6xl`/`max-w-4xl` — audit during Elite refresh
+- 🎯 **Section Spacing:** `py-28` still used everywhere with little variation — Elite refresh will introduce more deliberate rhythm
 
 ### 5. **Accessibility Issues**
-- ⚠️ **Contrast:** `text-white/40` is below WCAG AA standards
-- ⚠️ **Focus States:** No visible focus indicators on interactive elements
-- ⚠️ **Semantic HTML:** Some buttons are divs, links styled as buttons
-- ⚠️ **Skip Links:** No skip-to-content link
-- ⚠️ **Keyboard Navigation:** No trap management in modals
+- ✅ **Focus States:** Resolved — `:focus-visible` ring styles added globally
+- ✅ **Reduced Motion:** Resolved — `prefers-reduced-motion` media query added
+- ⚠️ **Skip Links:** Still missing
+- ⚠️ **Keyboard Navigation:** No trap management in portal modals/menus
 
 ### 6. **Animation & Performance**
-- ⚠️ **Overuse of Animations:** Every component has `.animate-fade-up`, may cause layout thrashing
-- ⚠️ **No Reduced Motion:** No `prefers-reduced-motion` support
-- ⚠️ **Stagger Delays:** Hard-coded to 9 children; breaks with more items
+- ✅ **Reduced Motion:** Resolved (see above)
+- 🎯 **Overuse of Animations:** `.animate-fade-up` + `.stagger` still applied broadly — Elite refresh will define a more restrained motion language
+- ⚠️ **Stagger Delays:** Still hard-coded to 9 children in `globals.css:139-147`
 
 ### 7. **Page-Level Issues**
-- ❌ **Resume Page:** Implementation unclear (PDF export? Markdown?)
-- ❌ **Work Page:** No filtering/sorting; flat grid
-- ❌ **Portal Pages:** Mostly structure, no content/functionality
-- ❌ **Privacy Page:** No content shown in analysis
+- ✅ **Resume Page:** Resolved — `/resume` renders `public/docs/resume-master.md` with print-to-PDF
+- 🎯 **Work Page:** Still no filtering/sorting; flat grid
+- ⚠️ **Portal Pages:** Functional for bio/messages/work; trading subsystem removed
+- ⚠️ **Privacy Page:** Not yet audited for content/styling consistency
 
-### 8. **Firestore & Data Issues**
+### 8. **Firestore & Data Issues** (out of scope for visual refresh)
 - ⚠️ **Legacy Types Coexist:** Venture, Project, Experiment types alongside WorkItem (migration incomplete)
 - ⚠️ **No Validation:** No schema validation in Firestore
 - ⚠️ **Order Field:** Only in workItems, but other collections may need ordering
@@ -414,9 +439,11 @@ RootLayout (app/layout.tsx)
 
 ---
 
-## Proposed Design System
+## Design System v1 (Implemented Reference)
 
-### 1. **New Color Palette**
+> This section documents the palette and tokens as they exist today in `tailwind.config.ts` / `globals.css`. It is the **baseline** that the upcoming "Elite" visual refresh (Phase 3) will evolve — see `Docs/DESIGN_TOKENS.md` for usage examples.
+
+### 1. **Color Palette (current)**
 
 #### Neutral Scale (Background & Text)
 ```
@@ -587,147 +614,26 @@ Body:
 
 ---
 
-## Refactoring Strategy
+## Design System v1 — Completed (Historical)
 
-### Phase 1: Design System Foundation
-**Duration:** 1-2 hours
-1. Update `tailwind.config.ts` with new color palette & design tokens
-2. Create `styles/design-tokens.css` for custom properties
-3. Update `globals.css` with new component classes
-4. Define `.btn-primary`, `.btn-secondary`, `.card`, `.input` base classes
+The 5-phase refactor described in earlier drafts of this document (design tokens → globals.css → component library → page refactors → validation) is **complete**:
 
-### Phase 2: Global CSS Overhaul
-**Duration:** 1-2 hours
-1. Refactor `globals.css` for consistency
-2. Update all utility classes with new colors
-3. Add accessibility patterns (focus states, reduced motion)
-4. Remove unused utilities; consolidate duplicates
-
-### Phase 3: Component Refactoring
-**Duration:** 3-4 hours
-1. Create reusable component library:
-   - `Button.tsx` (primary, secondary, tertiary variants)
-   - `Card.tsx` (base card with optional glass effect)
-   - `Input.tsx` (form input wrapper)
-   - `Badge.tsx` (tag/status display)
-   - `Heading.tsx` (h1-h6 with consistent styling)
-
-2. Refactor existing components:
-   - **Nav.tsx** - Update button styles, add focus states
-   - **Hero.tsx** - Consolidate button logic, use Button component
-   - **CapabilityBlocks.tsx** - Use Card component
-   - **SelectedWork.tsx** - Refactor cards, add Badge for status
-   - **ContactForm.tsx** - Use Input component, new Button styles
-
-3. Consolidate:
-   - Merge WorkCard + VentureCard → unified WorkCard
-   - Extract common form patterns
-
-### Phase 4: Page Refactoring
-**Duration:** 2-3 hours
-1. Audit all pages for consistency
-2. Update spacing/padding to use token scale
-3. Fix accessibility (heading hierarchy, focus indicators)
-4. Ensure metadata consistency
-
-### Phase 5: Testing & Validation
-**Duration:** 1-2 hours
-1. Test all pages for visual consistency
-2. Check responsive behavior (mobile, tablet, desktop)
-3. Validate accessibility (WCAG AA)
-4. Performance check (no layout shifts)
+- ✅ `tailwind.config.ts` and `globals.css` carry the full token system
+- ✅ `Button`, `Card`, `Input`/`Textarea`, `Badge`, `Heading` exist and are adopted by Hero, CapabilityBlocks, SelectedWork, ContactForm, About, Contact
+- ✅ Focus states + `prefers-reduced-motion` support added
+- ✅ Resume page clarified and built
+- 🎯 WorkCard/VentureCard consolidation, spacing audit, and remaining card refactors carried forward into the Elite refresh below
 
 ---
 
-## Implementation Roadmap
+## Next Initiative: Elite Visual Refresh (Phase 3)
 
-### Immediate Actions (This Session)
+**Goal:** "Elite, Confident, Minimalist, Beautiful" — evolve the v1 design system (above) into a more distinctive premium identity, inspired by reference sites like haffee.vercel.app and hafidziti.dev (restrained palette, generous whitespace, sharp typography, subtle motion).
 
-1. ✅ Create architecture document (this file)
-2. ⏳ **Update tailwind.config.ts** with new palette
-3. ⏳ **Refactor globals.css** with new design system
-4. ⏳ **Create base components** (Button, Card, Input, Badge, Heading)
-5. ⏳ **Refactor Nav & Footer** to use new system
-6. ⏳ **Refactor Hero component** with new colors/styles
-7. ⏳ **Refactor all cards** (Capabilities, SelectedWork, Contact)
-8. ⏳ **Update all pages** for consistency
-
-### Key Principles
-
-- ✅ **One source of truth:** Tailwind + design tokens
-- ✅ **Component-first:** Reusable, tested components
-- ✅ **Accessibility first:** WCAG AA compliance from start
-- ✅ **Performance:** No layout shifts, optimized animations
-- ✅ **Mobile-first:** Responsive by default
-- ✅ **Dark mode ready:** Current dark mode extended with new palette
-
----
-
-## Success Metrics
-
-- ✅ All pages use consistent color palette
-- ✅ No hardcoded colors in components (only Tailwind classes)
-- ✅ All cards/buttons follow unified design
-- ✅ WCAG AA contrast compliance across entire site
-- ✅ Reduced code duplication (components vs repeated logic)
-- ✅ Consistent spacing/sizing across all sections
-- ✅ No visual breaks in responsive design
-- ✅ Smooth animations without layout thrashing
-
----
-
-## Appendix: File Inventory
-
-### Components to Refactor
-```
-components/
-├── Nav.tsx (header) - UPDATE
-├── Footer.tsx - UPDATE
-├── Hero.tsx - REFACTOR
-├── CapabilityBlocks.tsx - REFACTOR
-├── SelectedWork.tsx - REFACTOR
-├── MetricsBar.tsx - UPDATE
-├── CurrentFocus.tsx - UPDATE
-├── WorkCard.tsx - CONSOLIDATE
-├── WorkGrid.tsx - UPDATE
-├── VentureCard.tsx - CONSOLIDATE
-└── portal/
-    └── PortalShell.tsx - CREATE
-```
-
-### Pages to Audit
-```
-app/
-├── page.tsx (home) - AUDIT
-├── about/page.tsx - UPDATE
-├── contact/ContactForm.tsx - REFACTOR
-├── contact/page.tsx - UPDATE
-├── work/page.tsx - UPDATE
-├── resume/page.tsx - CLARIFY
-└── privacy/page.tsx - AUDIT
-```
-
-### Styles to Create
-```
-app/
-├── globals.css - REFACTOR (large overhaul)
-
-styles/ (NEW)
-├── design-tokens.css (NEW)
-└── components.css (NEW)
-```
-
-### New Components to Create
-```
-components/
-├── Button.tsx (NEW)
-├── Card.tsx (NEW)
-├── Input.tsx (NEW)
-├── Badge.tsx (NEW)
-└── Heading.tsx (NEW)
-```
-
----
-
-**Document Generated:** June 9, 2026  
-**Next Steps:** Begin with Phase 1 - Design System Foundation
+This phase's color/typography/motion proposals and execution plan are tracked separately once drafted — see the Phase 3 deliverable in the working session. Scope carried forward from the issues audit above:
+- Distinctive primary accent (move beyond default sky-blue)
+- Type pairing for elevated hierarchy
+- More deliberate spacing rhythm (vs. uniform `py-28`)
+- Restrained, intentional motion (vs. blanket fade-up/stagger)
+- WorkCard/VentureCard consolidation
+- Work page filtering/sorting
